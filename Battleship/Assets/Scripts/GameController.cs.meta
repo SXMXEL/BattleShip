@@ -3,7 +3,11 @@ guid: 7a81a56afdfbf964f808be5342101da6
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
-  defaultReferences: []
+  defaultReferences:
+  - _gridCell: {fileID: 8512382937802705062, guid: 0ba7c994609e3294089864de4b4558ae,
+      type: 3}
+  - _userGridContainer: {instanceID: 0}
+  - _computerGridContainer: {instanceID: 0}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

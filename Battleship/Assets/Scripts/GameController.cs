@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Linq;
+using System.Net.Mime;
 using Elements;
 using UnityEngine;
+using UnityEngine.UI;
 using Random = UnityEngine.Random;
 
 
@@ -15,31 +17,25 @@ public enum GridElementType
 
 public class GameController : MonoBehaviour
 {
+    [SerializeField] private Text _winnerText;
+    [SerializeField] private Text _userScoreText;
+    [SerializeField] private Text _computerScoreText;
     [SerializeField] private ElementItem _gridCell;
     [SerializeField] private RectTransform _userGridContainer;
     [SerializeField] private RectTransform _computerGridContainer;
     private static int _gameGridSize = 10;
     private ElementItem[,] _userGridsCells = new ElementItem[_gameGridSize, _gameGridSize];
     private ElementItem[,] _computerGridsCells = new ElementItem[_gameGridSize, _gameGridSize];
-
+    private int _userScore = 0;
+    private int _computerScore = 0;
+    
+    
 
     private void Start()
     {
         GridCreate(_userGridsCells, null, _userGridContainer, OwnerType.User);
         GridCreate(_computerGridsCells, OnElementPressedForAttack, _computerGridContainer, OwnerType.Computer);
     }
-
-    /*private void Game()
-    {
-        while (_userGridsCells.Cast<ElementItem>().Any(data => data.GridElementType == GridElementType.Ship)
-               && _computerGridsCells.Cast<ElementItem>().Any(data => data.GridElementType == GridElementType.Ship))
-        {
-            if ()
-            {
-                
-            }    
-        }
-    }*/
 
 
     private static void SetRandomShips(ElementItem[,] grid)
@@ -91,6 +87,7 @@ public class GameController : MonoBehaviour
                     break;
                 case GridElementType.Ship:
                     currentElementItem.GridElementType = GridElementType.DestroyedShip;
+                    _computerScore++;
                     break;
                 case GridElementType.DestroyedShip:
                     break;
@@ -104,21 +101,39 @@ public class GameController : MonoBehaviour
 
     private void OnElementPressedForAttack(ElementItem elementItem)
     {
-        switch (elementItem.GridElementType)
+        _userScoreText.text = "Hit: " + _userScore;
+        _computerScoreText.text = "Hit: " + _computerScore;
+        while (_userGridsCells.Cast<ElementItem>().Any(data => data.GridElementType == GridElementType.Ship)
+               && _computerGridsCells.Cast<ElementItem>().Any(data => data.GridElementType == GridElementType.Ship))
         {
-            case GridElementType.None:
-                elementItem.GridElementType = GridElementType.Miss;
-                ComputerAttack();
-                break;
-            case GridElementType.Ship:
-                elementItem.GridElementType = GridElementType.DestroyedShip;
-                break;
-            case GridElementType.DestroyedShip:
-                return;
-                break;
-            case GridElementType.Miss:
-                return;
-                break;
+            switch (elementItem.GridElementType)
+            {
+                case GridElementType.None:
+                    elementItem.GridElementType = GridElementType.Miss;
+                    ComputerAttack();
+                    break;
+                case GridElementType.Ship:
+                    elementItem.GridElementType = GridElementType.DestroyedShip;
+                    _userScore++;
+                    break;
+                case GridElementType.DestroyedShip:
+                    return;
+                    break;
+                case GridElementType.Miss:
+                    return;
+                    break;
+            }
         }
+
+        if (_userGridsCells.Cast<ElementItem>().Any(element => element.GridElementType == GridElementType.Ship))
+        {
+            _winnerText.text = "You lose";
+        }
+        else
+        {
+            _winnerText.text = "You win";
+        }
+
+        _winnerText.IsActive();
     }
 }
