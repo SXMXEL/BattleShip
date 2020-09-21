@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Linq;
-using System.Net.Mime;
 using Elements;
 using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 using Random = UnityEngine.Random;
 
@@ -17,24 +18,90 @@ public enum GridElementType
 
 public class GameController : MonoBehaviour
 {
-    [SerializeField] private Text _winnerText;
-    [SerializeField] private Text _userScoreText;
-    [SerializeField] private Text _computerScoreText;
     [SerializeField] private ElementItem _gridCell;
+    [SerializeField] private UsersElementItem _shipsSetGridCell;
+    [SerializeField] private RectTransform _userShipsSetGridContainer;
     [SerializeField] private RectTransform _userGridContainer;
     [SerializeField] private RectTransform _computerGridContainer;
+    [SerializeField] private Button _startButton;
+    [SerializeField] private Button _shipsSetPanelQuitButton;
+    [SerializeField] private Button _restartButton;
+    [SerializeField] private Button _backToStartMenuButton;
+    [SerializeField] private AudioSource _explosion;
+    [SerializeField] private AudioSource _miss;
+    [SerializeField] private Text _computerScoreText;
+    [SerializeField] private Text _userScoreText;
+    [SerializeField] private Text _winnerText;
+    [SerializeField] private GameObject _startMenu;
+    [SerializeField] private GameObject _shipsSetPanel;
+    [SerializeField] private GameObject _game;
+    [SerializeField] private GameObject _winnerPanel;
     private static int _gameGridSize = 10;
-    private ElementItem[,] _userGridsCells = new ElementItem[_gameGridSize, _gameGridSize];
-    private ElementItem[,] _computerGridsCells = new ElementItem[_gameGridSize, _gameGridSize];
-    private int _userScore = 0;
-    private int _computerScore = 0;
-    
-    
+    private readonly ElementItem[,] _userGridsCells = new ElementItem[_gameGridSize, _gameGridSize];
+    private readonly ElementItem[,] _computerGridsCells = new ElementItem[_gameGridSize, _gameGridSize];
+    private readonly UsersElementItem[,] _usersShipsCoordinates = new UsersElementItem[_gameGridSize, _gameGridSize];
+    private int _userScore;
+    private int _computerScore;
+    private const float _delayTime = 0.3f;
+
 
     private void Start()
     {
+        _startButton.onClick.RemoveAllListeners();
+        _startButton.onClick.AddListener(GameStart);
+        _shipsSetPanelQuitButton.onClick.RemoveAllListeners();
+        _shipsSetPanelQuitButton.onClick.AddListener(ShipsSetPanelQuit);
+        _restartButton.onClick.RemoveAllListeners();
+        _restartButton.onClick.AddListener(Restart);
+        _backToStartMenuButton.onClick.RemoveAllListeners();
+        _backToStartMenuButton.onClick.AddListener(BackToStartMenu);
+        ShipSetGridCreate(_usersShipsCoordinates, SetShips, _userShipsSetGridContainer);
         GridCreate(_userGridsCells, null, _userGridContainer, OwnerType.User);
         GridCreate(_computerGridsCells, OnElementPressedForAttack, _computerGridContainer, OwnerType.Computer);
+    }
+
+    private void GameStart()
+    {
+        _startMenu.SetActive(false);
+        _shipsSetPanel.SetActive(true);
+        _game.SetActive(false);
+    }
+
+    private void ShipsSetPanelQuit()
+    {
+        _startMenu.SetActive(false);
+        _shipsSetPanel.SetActive(false);
+        _game.SetActive(true);
+    }
+
+    private void BackToStartMenu()
+    {
+        _startMenu.SetActive(true);
+        _shipsSetPanel.SetActive(false);
+        _game.SetActive(false);
+    }
+
+    private void Restart()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
+
+    private void SetShips(UsersElementItem usersElementItem)
+    {
+        while (_usersShipsCoordinates.Cast<UsersElementItem>().Where(data => data.GridElementType == GridElementType.Ship)
+                   .ToList().Count
+               < _gameGridSize * _gameGridSize * 0.2f)
+        {
+            usersElementItem.GridElementType = GridElementType.Ship;
+        }
+
+        for (int i = 0; i < _gameGridSize; i++)
+        {
+            for (int j = 0; j < _gameGridSize; j++)
+            {
+                _userGridsCells[i, j].GridElementType = _usersShipsCoordinates[i, j].GridElementType;
+            }
+        }
     }
 
 
@@ -52,6 +119,20 @@ public class GameController : MonoBehaviour
         }
     }
 
+    private void ShipSetGridCreate(UsersElementItem[,] usersElementItems,
+        Action<UsersElementItem> onElementPressed,
+        RectTransform container)
+    {
+        for (int i = 0; i < _gameGridSize; i++)
+        {
+            for (int j = 0; j < _gameGridSize; j++)
+            {
+                var usersElementItem = Instantiate(_shipsSetGridCell, container);
+                usersElementItem.Init(new Coordinates(i, j), onElementPressed, GridElementType.None);
+                usersElementItems[i, j] = usersElementItem;
+            }
+        }
+    }
 
     private void GridCreate(ElementItem[,] elementItems,
         Action<ElementItem> onElementPressed,
@@ -72,6 +153,7 @@ public class GameController : MonoBehaviour
         SetRandomShips(elementItems);
     }
 
+
     private void ComputerAttack()
     {
         while (_computerGridsCells.Cast<ElementItem>().Any(data => data.GridElementType == GridElementType.Ship))
@@ -83,10 +165,11 @@ public class GameController : MonoBehaviour
             {
                 case GridElementType.None:
                     currentElementItem.GridElementType = GridElementType.Miss;
+                    _miss.PlayDelayed(_delayTime);
                     return;
-                    break;
                 case GridElementType.Ship:
                     currentElementItem.GridElementType = GridElementType.DestroyedShip;
+                    _explosion.PlayDelayed(_delayTime);
                     _computerScore++;
                     break;
                 case GridElementType.DestroyedShip:
@@ -110,30 +193,26 @@ public class GameController : MonoBehaviour
             {
                 case GridElementType.None:
                     elementItem.GridElementType = GridElementType.Miss;
+                    _miss.PlayDelayed(_delayTime);
                     ComputerAttack();
                     break;
                 case GridElementType.Ship:
                     elementItem.GridElementType = GridElementType.DestroyedShip;
+                    _explosion.PlayDelayed(_delayTime);
                     _userScore++;
                     break;
                 case GridElementType.DestroyedShip:
                     return;
-                    break;
                 case GridElementType.Miss:
                     return;
-                    break;
             }
         }
 
-        if (_userGridsCells.Cast<ElementItem>().Any(element => element.GridElementType == GridElementType.Ship))
-        {
-            _winnerText.text = "You lose";
-        }
-        else
-        {
-            _winnerText.text = "You win";
-        }
+        _winnerText.text =
+            _computerGridsCells.Cast<ElementItem>().Any(element => element.GridElementType == GridElementType.Ship)
+                ? "You lose"
+                : "You win";
 
-        _winnerText.IsActive();
+        _winnerPanel.SetActive(true);
     }
 }
