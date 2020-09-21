@@ -17,13 +17,12 @@ public enum GridElementType
 
 public class GameController : MonoBehaviour
 {
+    [SerializeField] private UserShipsSetPanel _userShipsSetPanel;
+    [SerializeField] private SoundManager _soundManager;
     [SerializeField] private ElementItem _gridCell;
-    [SerializeField] private UsersElementItem _shipsSetGridCell;
-    [SerializeField] private RectTransform _userShipsSetGridContainer;
     [SerializeField] private RectTransform _userGridContainer;
     [SerializeField] private RectTransform _computerGridContainer;
     [SerializeField] private Button _startButton;
-    [SerializeField] private Button _shipsSetPanelQuitButton;
     [SerializeField] private Button _restartButton;
     [SerializeField] private Button _backToStartMenuButton;
     [SerializeField] private AudioSource _explosion;
@@ -35,10 +34,9 @@ public class GameController : MonoBehaviour
     [SerializeField] private GameObject _shipsSetPanel;
     [SerializeField] private GameObject _game;
     [SerializeField] private GameObject _winnerPanel;
-    private static int _gameGridSize = 10;
-    private readonly ElementItem[,] _userGridsCells = new ElementItem[_gameGridSize, _gameGridSize];
-    private readonly ElementItem[,] _computerGridsCells = new ElementItem[_gameGridSize, _gameGridSize];
-    private readonly UsersElementItem[,] _usersShipsCoordinates = new UsersElementItem[_gameGridSize, _gameGridSize];
+    public const int GridSize = 10;
+    private readonly ElementItem[,] _userGridsCells = new ElementItem[GridSize, GridSize];
+    private readonly ElementItem[,] _computerGridsCells = new ElementItem[GridSize, GridSize];
     private int _userScore;
     private int _computerScore;
     private const float _delayTime = 0.3f;
@@ -46,18 +44,20 @@ public class GameController : MonoBehaviour
 
     private void Start()
     {
+        Init();
+    }
+
+    private void Init()
+    {
         _startButton.onClick.RemoveAllListeners();
         _startButton.onClick.AddListener(GameStart);
-        _shipsSetPanelQuitButton.onClick.RemoveAllListeners();
-        _shipsSetPanelQuitButton.onClick.AddListener(ShipsSetPanelQuit);
         _restartButton.onClick.RemoveAllListeners();
         _restartButton.onClick.AddListener(Restart);
         _backToStartMenuButton.onClick.RemoveAllListeners();
         _backToStartMenuButton.onClick.AddListener(BackToStartMenu);
-        ShipSetGridCreate(_usersShipsCoordinates, SetShips, _userShipsSetGridContainer);
+        _userShipsSetPanel.Init(ShipsSetPanelQuit, _userGridsCells);
         GridCreate(_userGridsCells, null, _userGridContainer, OwnerType.User);
-        ShipsSet();
-        GridCreate(_computerGridsCells, OnElementPressedForAttack, _computerGridContainer, OwnerType.User);
+        GridCreate(_computerGridsCells, OnElementPressedForAttack, _computerGridContainer, OwnerType.Computer);
     }
 
     private void GameStart()
@@ -86,24 +86,16 @@ public class GameController : MonoBehaviour
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
-    private void SetShips(UsersElementItem usersElementItem)
-    {
-        /*while (_usersShipsCoordinates.Cast<UsersElementItem>()
-            .Where(data => data.GridElementType == GridElementType.Ship)
-            .ToList().Count < _gameGridSize * _gameGridSize * 0.2f)
-        {*/
-        usersElementItem.GridElementType = GridElementType.Ship;
-        //}
-    }
+    
 
 
     private static void SetRandomShips(ElementItem[,] grid)
     {
         while (grid.Cast<ElementItem>().Where(data => data.GridElementType == GridElementType.Ship).ToList().Count
-               < _gameGridSize * _gameGridSize * 0.2f)
+               < GridSize * GridSize * 0.2f)
         {
-            var randRow = Random.Range(0, _gameGridSize);
-            var randColumn = Random.Range(0, _gameGridSize);
+            var randRow = Random.Range(0, GridSize);
+            var randColumn = Random.Range(0, GridSize);
             if (grid[randRow, randColumn].GridElementType == GridElementType.None)
             {
                 grid[randRow, randColumn].GridElementType = GridElementType.Ship;
@@ -111,32 +103,21 @@ public class GameController : MonoBehaviour
         }
     }
 
-    private void ShipSetGridCreate(UsersElementItem[,] usersElementItems,
-        Action<UsersElementItem> onElementPressed,
-        RectTransform container)
-    {
-        for (int i = 0; i < _gameGridSize; i++)
-        {
-            for (int j = 0; j < _gameGridSize; j++)
-            {
-                var usersElementItem = Instantiate(_shipsSetGridCell, container);
-                usersElementItem.Init(new Coordinates(i, j), onElementPressed, GridElementType.None);
-                usersElementItems[i, j] = usersElementItem;
-            }
-        }
-    }
+    
 
     private void GridCreate(ElementItem[,] elementItems,
         Action<ElementItem> onElementPressed,
         RectTransform container,
         OwnerType ownerType)
     {
-        for (int i = 0; i < _gameGridSize; i++)
+        for (int i = 0; i < GridSize; i++)
         {
-            for (int j = 0; j < _gameGridSize; j++)
+            for (int j = 0; j < GridSize; j++)
             {
                 var elementItem = Instantiate(_gridCell, container);
-                elementItem.Init(new Coordinates(i, j), onElementPressed,
+                elementItem.Init(
+                    new Coordinates(i, j), 
+                    onElementPressed,
                     GridElementType.None, ownerType);
                 elementItems[i, j] = elementItem;
             }
@@ -146,26 +127,18 @@ public class GameController : MonoBehaviour
         {
             SetRandomShips(_computerGridsCells);
         }
-        
+
     }
 
-    private void ShipsSet()
-    {
-        foreach (var item in _usersShipsCoordinates.Cast<UsersElementItem>()
-            .Where(data => data.GridElementType == GridElementType.Ship))
-        {
-            Debug.Log("found one");
-            _userGridsCells[item.Coordinates.X, item.Coordinates.Y].GridElementType = item.GridElementType;
-        }
-    }
+   
 
 
     private void ComputerAttack()
     {
         while (_computerGridsCells.Cast<ElementItem>().Any(data => data.GridElementType == GridElementType.Ship))
         {
-            var randRow = Random.Range(0, _gameGridSize);
-            var randColumn = Random.Range(0, _gameGridSize);
+            var randRow = Random.Range(0, GridSize);
+            var randColumn = Random.Range(0, GridSize);
             var currentElementItem = _userGridsCells[randRow, randColumn];
             switch (currentElementItem.GridElementType)
             {
@@ -190,8 +163,6 @@ public class GameController : MonoBehaviour
 
     private void OnElementPressedForAttack(ElementItem elementItem)
     {
-        _userScoreText.text = "Hit: " + _userScore;
-        _computerScoreText.text = "Hit: " + _computerScore;
         while (_userGridsCells.Cast<ElementItem>().Any(data => data.GridElementType == GridElementType.Ship)
                && _computerGridsCells.Cast<ElementItem>().Any(data => data.GridElementType == GridElementType.Ship))
         {
@@ -212,12 +183,15 @@ public class GameController : MonoBehaviour
                 case GridElementType.Miss:
                     return;
             }
+
+            _userScoreText.text = "Hit: " + _userScore;
+            _computerScoreText.text = "Hit: " + _computerScore;
         }
 
         _winnerText.text =
             _computerGridsCells.Cast<ElementItem>().Any(element => element.GridElementType == GridElementType.Ship)
-                ? "You lose"
-                : "You win";
+                ? "You LOSE"
+                : "You WIN";
 
         _winnerPanel.SetActive(true);
     }

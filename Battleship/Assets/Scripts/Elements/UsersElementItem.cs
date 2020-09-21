@@ -19,7 +19,7 @@ namespace Elements
             {
                 _gridElementTypeType = value;
 
-                _elementSpriteChange.ChangeSprite(value);
+                _elementSpriteChange.ChangeSprite(_gridElementTypeType);
             }
             get => _gridElementTypeType;
         }
