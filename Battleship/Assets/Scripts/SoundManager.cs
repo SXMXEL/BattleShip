@@ -12,6 +12,6 @@ public class SoundManager : MonoBehaviour
 {
     [SerializeField] private AudioSource _explosionAudioSource;
     [SerializeField] private AudioSource _missAudioSource;
-    
-    
+    private PlaySound _playSound;
+
 }
