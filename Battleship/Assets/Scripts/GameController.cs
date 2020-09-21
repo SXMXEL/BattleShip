@@ -3,7 +3,6 @@ using System.Linq;
 using Elements;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.Serialization;
 using UnityEngine.UI;
 using Random = UnityEngine.Random;
 
@@ -57,7 +56,8 @@ public class GameController : MonoBehaviour
         _backToStartMenuButton.onClick.AddListener(BackToStartMenu);
         ShipSetGridCreate(_usersShipsCoordinates, SetShips, _userShipsSetGridContainer);
         GridCreate(_userGridsCells, null, _userGridContainer, OwnerType.User);
-        GridCreate(_computerGridsCells, OnElementPressedForAttack, _computerGridContainer, OwnerType.Computer);
+        ShipsSet();
+        GridCreate(_computerGridsCells, OnElementPressedForAttack, _computerGridContainer, OwnerType.User);
     }
 
     private void GameStart()
@@ -88,20 +88,12 @@ public class GameController : MonoBehaviour
 
     private void SetShips(UsersElementItem usersElementItem)
     {
-        while (_usersShipsCoordinates.Cast<UsersElementItem>().Where(data => data.GridElementType == GridElementType.Ship)
-                   .ToList().Count
-               < _gameGridSize * _gameGridSize * 0.2f)
-        {
-            usersElementItem.GridElementType = GridElementType.Ship;
-        }
-
-        for (int i = 0; i < _gameGridSize; i++)
-        {
-            for (int j = 0; j < _gameGridSize; j++)
-            {
-                _userGridsCells[i, j].GridElementType = _usersShipsCoordinates[i, j].GridElementType;
-            }
-        }
+        /*while (_usersShipsCoordinates.Cast<UsersElementItem>()
+            .Where(data => data.GridElementType == GridElementType.Ship)
+            .ToList().Count < _gameGridSize * _gameGridSize * 0.2f)
+        {*/
+        usersElementItem.GridElementType = GridElementType.Ship;
+        //}
     }
 
 
@@ -150,7 +142,21 @@ public class GameController : MonoBehaviour
             }
         }
 
-        SetRandomShips(elementItems);
+        if (elementItems == _computerGridsCells)
+        {
+            SetRandomShips(_computerGridsCells);
+        }
+        
+    }
+
+    private void ShipsSet()
+    {
+        foreach (var item in _usersShipsCoordinates.Cast<UsersElementItem>()
+            .Where(data => data.GridElementType == GridElementType.Ship))
+        {
+            Debug.Log("found one");
+            _userGridsCells[item.Coordinates.X, item.Coordinates.Y].GridElementType = item.GridElementType;
+        }
     }
 
 
