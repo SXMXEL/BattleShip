@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -22,17 +20,17 @@ namespace Elements
     [Serializable]
     public class ElementGfx
     {
-        public GridElementType GridElementType => gridElementType;
+        public GridElementType GridElementType => _gridElementType;
 
-        [FormerlySerializedAs("_gridElement")] [SerializeField]
-        private GridElementType gridElementType;
+        [SerializeField]
+        private GridElementType _gridElementType;
 
         public Sprite Gfx => _gfx;
         [SerializeField] private Sprite _gfx;
 
         public ElementGfx(GridElementType gridElementType, Sprite gfx)
         {
-            this.gridElementType = gridElementType;
+            _gridElementType = gridElementType;
             _gfx = gfx;
         }
     }

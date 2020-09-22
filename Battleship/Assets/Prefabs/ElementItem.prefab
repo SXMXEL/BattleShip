@@ -89,13 +89,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _gfx: {fileID: 5415639056245525943}
   _elementGfxes:
-  - gridElementType: 0
+  - _gridElementType: 0
     _gfx: {fileID: 21300000, guid: 70d4ca983cbab6a448a9d363a1f64158, type: 3}
-  - gridElementType: 1
+  - _gridElementType: 1
     _gfx: {fileID: 21300000, guid: 62d60386a53ada14fb457508e72a6660, type: 3}
-  - gridElementType: 2
+  - _gridElementType: 2
     _gfx: {fileID: 21300000, guid: a2fbadd2f10d9194db0fece299cf002f, type: 3}
-  - gridElementType: 3
+  - _gridElementType: 3
     _gfx: {fileID: 21300000, guid: bec6b1561b193024f8816ae2a9591c5a, type: 3}
 --- !u!1 &6877884123649773435
 GameObject:
@@ -110,7 +110,6 @@ GameObject:
   - component: {fileID: 6877884123649773428}
   - component: {fileID: 6877884123649773429}
   - component: {fileID: 8512382937802705062}
-  - component: {fileID: 4054789814880887154}
   m_Layer: 5
   m_Name: ElementItem
   m_TagString: Untagged
@@ -231,18 +230,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _innerButton: {fileID: 6877884123649773429}
-  _elementSpriteChange: {fileID: 2404139427141492496}
---- !u!114 &4054789814880887154
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6877884123649773435}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 185bbf75a7a0b6c4f92b354090e04520, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _coordinatesButton: {fileID: 6877884123649773429}
   _elementSpriteChange: {fileID: 2404139427141492496}

@@ -19,14 +19,13 @@ public class GameController : MonoBehaviour
 {
     [SerializeField] private UserShipsSetPanel _userShipsSetPanel;
     [SerializeField] private SoundManager _soundManager;
+    [SerializeField] private UserData _userData;
     [SerializeField] private ElementItem _gridCell;
     [SerializeField] private RectTransform _userGridContainer;
     [SerializeField] private RectTransform _computerGridContainer;
     [SerializeField] private Button _startButton;
     [SerializeField] private Button _restartButton;
     [SerializeField] private Button _backToStartMenuButton;
-    [SerializeField] private AudioSource _explosion;
-    [SerializeField] private AudioSource _miss;
     [SerializeField] private Text _computerScoreText;
     [SerializeField] private Text _userScoreText;
     [SerializeField] private Text _winnerText;
@@ -34,12 +33,12 @@ public class GameController : MonoBehaviour
     [SerializeField] private GameObject _shipsSetPanel;
     [SerializeField] private GameObject _game;
     [SerializeField] private GameObject _winnerPanel;
+    private SfxType _sfxType;
     public const int GridSize = 10;
     private readonly ElementItem[,] _userGridsCells = new ElementItem[GridSize, GridSize];
     private readonly ElementItem[,] _computerGridsCells = new ElementItem[GridSize, GridSize];
     private int _userScore;
     private int _computerScore;
-    private const float _delayTime = 0.3f;
 
 
     private void Start()
@@ -144,11 +143,11 @@ public class GameController : MonoBehaviour
             {
                 case GridElementType.None:
                     currentElementItem.GridElementType = GridElementType.Miss;
-                    _miss.PlayDelayed(_delayTime);
+                    _soundManager.PlaySfx(_sfxType);
                     return;
                 case GridElementType.Ship:
                     currentElementItem.GridElementType = GridElementType.DestroyedShip;
-                    _explosion.PlayDelayed(_delayTime);
+                    _soundManager.PlaySfx(_sfxType);
                     _computerScore++;
                     break;
                 case GridElementType.DestroyedShip:
@@ -170,12 +169,12 @@ public class GameController : MonoBehaviour
             {
                 case GridElementType.None:
                     elementItem.GridElementType = GridElementType.Miss;
-                    _miss.PlayDelayed(_delayTime);
+                    _soundManager.PlaySfx(_sfxType);
                     ComputerAttack();
                     break;
                 case GridElementType.Ship:
                     elementItem.GridElementType = GridElementType.DestroyedShip;
-                    _explosion.PlayDelayed(_delayTime);
+                    _soundManager.PlaySfx(_sfxType);
                     _userScore++;
                     break;
                 case GridElementType.DestroyedShip:
