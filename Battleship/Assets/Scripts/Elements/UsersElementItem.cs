@@ -1,4 +1,5 @@
 ﻿using System;
+using DG.Tweening;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -9,6 +10,7 @@ namespace Elements
         public Coordinates Coordinates { private set; get; }
         [SerializeField] private Button _coordinatesButton;
         [SerializeField] private ElementSpriteChange _elementSpriteChange;
+        [SerializeField] private RectTransform _userElementItemRectTransform;
 
         private GridElementType _gridElementTypeType;
 
@@ -32,7 +34,14 @@ namespace Elements
             Coordinates = coordinates;
             _coordinatesButton.onClick.RemoveAllListeners();
             _coordinatesButton.onClick.AddListener(() => { OnPressed?.Invoke(this); });
+            _coordinatesButton.onClick.AddListener(UserElementItemScale);
             GridElementType = gridElementType;
+        }
+
+        private void UserElementItemScale()
+        {
+            _userElementItemRectTransform.localScale = Vector3.zero;
+            _userElementItemRectTransform.DOScale(Vector3.one, 0.3f).SetEase(Ease.OutBack);
         }
     }
 }

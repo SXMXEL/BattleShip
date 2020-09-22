@@ -1,4 +1,5 @@
 ﻿using System;
+using DG.Tweening;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -14,6 +15,7 @@ namespace Elements
     {
         [SerializeField] private Button _innerButton;
         [SerializeField] private ElementSpriteChange _elementSpriteChange;
+        [SerializeField] private Transform _elementItemTransform;
         public Coordinates Coordinates { private set; get; }
         private GridElementType _gridElementTypeType;
         private OwnerType _ownerType;
@@ -57,10 +59,15 @@ namespace Elements
             Coordinates = coordinates;
             _innerButton.onClick.RemoveAllListeners();
             _innerButton.onClick.AddListener(
-                () => { onPressed?.Invoke(this); }
-            );
+                () => { onPressed?.Invoke(this); });
+            _innerButton.onClick.AddListener(ElementItemScale);
             GridElementType = gridElementType;
             _ownerType = ownerType;
+        }
+
+        public void ElementItemScale()
+        {
+            _elementItemTransform.DOShakePosition(3f, 2.5f);
         }
     }
 }

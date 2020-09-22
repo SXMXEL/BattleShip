@@ -19,7 +19,7 @@ public class GameController : MonoBehaviour
 {
     [SerializeField] private UserShipsSetPanel _userShipsSetPanel;
     [SerializeField] private SoundManager _soundManager;
-    [SerializeField] private UserData _userData;
+    [SerializeField] private DataManager _dataManager;
     [SerializeField] private ElementItem _gridCell;
     [SerializeField] private RectTransform _userGridContainer;
     [SerializeField] private RectTransform _computerGridContainer;
@@ -37,8 +37,6 @@ public class GameController : MonoBehaviour
     public const int GridSize = 10;
     private readonly ElementItem[,] _userGridsCells = new ElementItem[GridSize, GridSize];
     private readonly ElementItem[,] _computerGridsCells = new ElementItem[GridSize, GridSize];
-    private int _userScore;
-    private int _computerScore;
 
 
     private void Start()
@@ -48,6 +46,7 @@ public class GameController : MonoBehaviour
 
     private void Init()
     {
+        PlayerPrefs.DeleteAll();
         _startButton.onClick.RemoveAllListeners();
         _startButton.onClick.AddListener(GameStart);
         _restartButton.onClick.RemoveAllListeners();
@@ -85,8 +84,6 @@ public class GameController : MonoBehaviour
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
-    
-
 
     private static void SetRandomShips(ElementItem[,] grid)
     {
@@ -102,7 +99,6 @@ public class GameController : MonoBehaviour
         }
     }
 
-    
 
     private void GridCreate(ElementItem[,] elementItems,
         Action<ElementItem> onElementPressed,
@@ -115,21 +111,20 @@ public class GameController : MonoBehaviour
             {
                 var elementItem = Instantiate(_gridCell, container);
                 elementItem.Init(
-                    new Coordinates(i, j), 
+                    new Coordinates(i, j),
                     onElementPressed,
-                    GridElementType.None, ownerType);
+                    GridElementType.None,
+                    ownerType);
                 elementItems[i, j] = elementItem;
             }
         }
+
 
         if (elementItems == _computerGridsCells)
         {
             SetRandomShips(_computerGridsCells);
         }
-
     }
-
-   
 
 
     private void ComputerAttack()
@@ -148,7 +143,11 @@ public class GameController : MonoBehaviour
                 case GridElementType.Ship:
                     currentElementItem.GridElementType = GridElementType.DestroyedShip;
                     _soundManager.PlaySfx(_sfxType);
-                    _computerScore++;
+                    if (_dataManager.UserData.ComputerHitShipsCount != null)
+                    {
+                        _dataManager.UserData.ComputerHitShipsCount++;
+                        _dataManager.Save();
+                    }
                     break;
                 case GridElementType.DestroyedShip:
                     break;
@@ -175,7 +174,11 @@ public class GameController : MonoBehaviour
                 case GridElementType.Ship:
                     elementItem.GridElementType = GridElementType.DestroyedShip;
                     _soundManager.PlaySfx(_sfxType);
-                    _userScore++;
+                    if (_dataManager.UserData.UserHitShipsCount != null)
+                    {
+                        _dataManager.UserData.UserHitShipsCount++;
+                        _dataManager.Save();
+                    }
                     break;
                 case GridElementType.DestroyedShip:
                     return;
@@ -183,8 +186,9 @@ public class GameController : MonoBehaviour
                     return;
             }
 
-            _userScoreText.text = "Hit: " + _userScore;
-            _computerScoreText.text = "Hit: " + _computerScore;
+            _dataManager.Init();
+            _userScoreText.text = "Hit: " + _dataManager.UserData.UserHitShipsCount;
+            _computerScoreText.text = "Hit: " + _dataManager.UserData.ComputerHitShipsCount;
         }
 
         _winnerText.text =

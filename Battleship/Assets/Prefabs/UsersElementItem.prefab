@@ -231,3 +231,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _coordinatesButton: {fileID: 8742346922108802701}
   _elementSpriteChange: {fileID: 539606281488451304}
+  _userElementItemRectTransform: {fileID: 8742346922108802690}

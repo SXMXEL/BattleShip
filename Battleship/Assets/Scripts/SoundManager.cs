@@ -30,9 +30,9 @@ public class SfxItem
     public AudioClip AudioClip => _audio;
     [SerializeField]private AudioClip _audio;
 
-    public SfxItem(SfxType sfxType, AudioClip audioSource)
+    public SfxItem(SfxType sfxType, AudioClip audioClip)
     {
         _sfxType = sfxType;
-        _audio = audioSource;
+        _audio = audioClip;
     }
 }
