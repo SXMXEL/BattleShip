@@ -3,14 +3,14 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class DataManager : MonoBehaviour
+public class DataManager
 {
 
     public const string DataSaveKey = "DataSaveKey";
 
     public UserData UserData { private set; get; }
 
-    public void Init()
+    public DataManager()
     {
         Load();
     }
@@ -34,9 +34,8 @@ public class DataManager : MonoBehaviour
     }
 }
 
-[Serializable]
 public class UserData
 {
-    public int UserHitShipsCount;
-    public int ComputerHitShipsCount;
+    public bool IsMuted = false;
 }
+

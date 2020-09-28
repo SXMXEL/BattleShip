@@ -2,7 +2,6 @@
 using System.Linq;
 using Elements;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using Random = UnityEngine.Random;
 
@@ -18,22 +17,25 @@ public enum GridElementType
 public class GameController : MonoBehaviour
 {
     [SerializeField] private UserShipsSetPanel _userShipsSetPanel;
+    [SerializeField] private SettingsMenu _settingsMenu;
     [SerializeField] private SoundManager _soundManager;
-    [SerializeField] private DataManager _dataManager;
+    private DataManager _dataManager;
+    private SessionDataManager _sessionDataManager;
     [SerializeField] private ElementItem _gridCell;
     [SerializeField] private RectTransform _userGridContainer;
     [SerializeField] private RectTransform _computerGridContainer;
     [SerializeField] private Button _startButton;
     [SerializeField] private Button _restartButton;
     [SerializeField] private Button _backToStartMenuButton;
+    [SerializeField] private Button _settingsMenuButton;
     [SerializeField] private Text _computerScoreText;
     [SerializeField] private Text _userScoreText;
     [SerializeField] private Text _winnerText;
-    [SerializeField] private GameObject _startMenu;
-    [SerializeField] private GameObject _shipsSetPanel;
-    [SerializeField] private GameObject _game;
-    [SerializeField] private GameObject _winnerPanel;
-    private SfxType _sfxType;
+    [SerializeField] private GameObject _startMenuObject;
+    [SerializeField] private GameObject _settingsMenuObject;
+    [SerializeField] private GameObject _shipsSetPanelObject;
+    [SerializeField] private GameObject _gamePhaseObject;
+    [SerializeField] private GameObject _winnerPanelObject;
     public const int GridSize = 10;
     private readonly ElementItem[,] _userGridsCells = new ElementItem[GridSize, GridSize];
     private readonly ElementItem[,] _computerGridsCells = new ElementItem[GridSize, GridSize];
@@ -46,9 +48,14 @@ public class GameController : MonoBehaviour
 
     private void Init()
     {
-        PlayerPrefs.DeleteAll();
+        _dataManager = new DataManager();
+        _sessionDataManager = new SessionDataManager();
+        _soundManager.Init();
         _startButton.onClick.RemoveAllListeners();
         _startButton.onClick.AddListener(GameStart);
+        _settingsMenuButton.onClick.RemoveAllListeners();
+        _settingsMenuButton.onClick.AddListener(ToSettingsMenu);
+        _settingsMenu.Init(BackToStartMenu);
         _restartButton.onClick.RemoveAllListeners();
         _restartButton.onClick.AddListener(Restart);
         _backToStartMenuButton.onClick.RemoveAllListeners();
@@ -60,28 +67,51 @@ public class GameController : MonoBehaviour
 
     private void GameStart()
     {
-        _startMenu.SetActive(false);
-        _shipsSetPanel.SetActive(true);
-        _game.SetActive(false);
+        _startMenuObject.SetActive(false);
+        _shipsSetPanelObject.SetActive(true);
+        _gamePhaseObject.SetActive(false);
+        _settingsMenuObject.SetActive(false);
+    }
+
+    private void ToSettingsMenu()
+    {
+        _startMenuObject.SetActive(false);
+        _shipsSetPanelObject.SetActive(false);
+        _gamePhaseObject.SetActive(false);
+        _settingsMenuObject.SetActive(true);
     }
 
     private void ShipsSetPanelQuit()
     {
-        _startMenu.SetActive(false);
-        _shipsSetPanel.SetActive(false);
-        _game.SetActive(true);
+        _startMenuObject.SetActive(false);
+        _shipsSetPanelObject.SetActive(false);
+        _gamePhaseObject.SetActive(true);
+        _settingsMenuObject.SetActive(false);
     }
 
     private void BackToStartMenu()
     {
-        _startMenu.SetActive(true);
-        _shipsSetPanel.SetActive(false);
-        _game.SetActive(false);
+        _startMenuObject.SetActive(true);
+        _shipsSetPanelObject.SetActive(false);
+        _gamePhaseObject.SetActive(false);
+        _settingsMenuObject.SetActive(false);
     }
 
     private void Restart()
     {
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        for (int i = 0; i < GridSize; i++)
+        {
+            for (int j = 0; j < GridSize; j++)
+            {
+                _userGridsCells[i, j].GridElementType = GridElementType.None;
+                _computerGridsCells[i, j].GridElementType = GridElementType.None;
+            }
+        }
+
+        _sessionDataManager.UserHitShipsCount = 0;
+        _sessionDataManager.ComputerHitShipsCount = 0;
+        SetRandomShips(_computerGridsCells);
+        GameStart();
     }
 
 
@@ -138,16 +168,12 @@ public class GameController : MonoBehaviour
             {
                 case GridElementType.None:
                     currentElementItem.GridElementType = GridElementType.Miss;
-                    _soundManager.PlaySfx(_sfxType);
+                    _soundManager.PlaySfx(SfxType.Miss);
                     return;
                 case GridElementType.Ship:
                     currentElementItem.GridElementType = GridElementType.DestroyedShip;
-                    _soundManager.PlaySfx(_sfxType);
-                    if (_dataManager.UserData.ComputerHitShipsCount != null)
-                    {
-                        _dataManager.UserData.ComputerHitShipsCount++;
-                        _dataManager.Save();
-                    }
+                    _soundManager.PlaySfx(SfxType.Explosion);
+                    _sessionDataManager.ComputerHitShipsCount++;
                     break;
                 case GridElementType.DestroyedShip:
                     break;
@@ -168,27 +194,21 @@ public class GameController : MonoBehaviour
             {
                 case GridElementType.None:
                     elementItem.GridElementType = GridElementType.Miss;
-                    _soundManager.PlaySfx(_sfxType);
+                    _soundManager.PlaySfx(SfxType.Miss);
                     ComputerAttack();
                     break;
                 case GridElementType.Ship:
                     elementItem.GridElementType = GridElementType.DestroyedShip;
-                    _soundManager.PlaySfx(_sfxType);
-                    if (_dataManager.UserData.UserHitShipsCount != null)
-                    {
-                        _dataManager.UserData.UserHitShipsCount++;
-                        _dataManager.Save();
-                    }
+                    _soundManager.PlaySfx(SfxType.Explosion);
+                    _sessionDataManager.UserHitShipsCount++;
                     break;
                 case GridElementType.DestroyedShip:
                     return;
                 case GridElementType.Miss:
                     return;
             }
-
-            _dataManager.Init();
-            _userScoreText.text = "Hit: " + _dataManager.UserData.UserHitShipsCount;
-            _computerScoreText.text = "Hit: " + _dataManager.UserData.ComputerHitShipsCount;
+            _userScoreText.text = "Hit: " + _sessionDataManager.UserHitShipsCount;
+            _computerScoreText.text = "Hit: " + _sessionDataManager.ComputerHitShipsCount;
         }
 
         _winnerText.text =
@@ -196,6 +216,6 @@ public class GameController : MonoBehaviour
                 ? "You LOSE"
                 : "You WIN";
 
-        _winnerPanel.SetActive(true);
+        _winnerPanelObject.SetActive(true);
     }
 }

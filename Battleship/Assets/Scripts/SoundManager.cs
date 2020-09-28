@@ -5,19 +5,34 @@ using UnityEngine;
 public enum SfxType
 {
     Explosion,
-    Miss
+    Miss,
+    ShipPlaceSound
 }
 
 public class SoundManager : MonoBehaviour
 {
+    private DataManager _dataManager;
     [SerializeField] private SfxItem[] _audioSources;
     [SerializeField] private AudioSource _audio;
     [SerializeField] private float _delayTime = 0.3f;
-    
+
+    public void Init()
+    {
+        _dataManager = new DataManager();
+    }
+
     public void PlaySfx(SfxType sfxType)
     {
-        _audio.clip = _audioSources.First(data => data.SfxType == sfxType).AudioClip;
-        _audio.PlayDelayed(_delayTime);
+        if (_dataManager.UserData.IsMuted == false)
+        {
+            _audio.clip = _audioSources.First(data => data.SfxType == sfxType).AudioClip;
+            _audio.PlayDelayed(_delayTime);
+        }
+
+        if (_dataManager.UserData.IsMuted == true)
+        {
+            Debug.Log("Mute on");
+        }
     }
 }
 
@@ -25,14 +40,13 @@ public class SoundManager : MonoBehaviour
 public class SfxItem
 {
     public SfxType SfxType => _sfxType;
-    [SerializeField]
-    private SfxType _sfxType;
-    public AudioClip AudioClip => _audio;
-    [SerializeField]private AudioClip _audio;
+    [SerializeField] private SfxType _sfxType;
+    public AudioClip AudioClip => _audioClip;
+    [SerializeField] private AudioClip _audioClip;
 
     public SfxItem(SfxType sfxType, AudioClip audioClip)
     {
         _sfxType = sfxType;
-        _audio = audioClip;
+        _audioClip = audioClip;
     }
 }

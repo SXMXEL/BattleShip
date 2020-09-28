@@ -60,12 +60,12 @@ namespace Elements
             _innerButton.onClick.RemoveAllListeners();
             _innerButton.onClick.AddListener(
                 () => { onPressed?.Invoke(this); });
-            _innerButton.onClick.AddListener(ElementItemScale);
+            _innerButton.onClick.AddListener(ElementItemShake);
             GridElementType = gridElementType;
             _ownerType = ownerType;
         }
 
-        public void ElementItemScale()
+        public void ElementItemShake()
         {
             _elementItemTransform.DOShakePosition(3f, 2.5f);
         }

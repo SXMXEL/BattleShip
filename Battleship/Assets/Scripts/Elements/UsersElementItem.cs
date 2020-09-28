@@ -11,8 +11,8 @@ namespace Elements
         [SerializeField] private Button _coordinatesButton;
         [SerializeField] private ElementSpriteChange _elementSpriteChange;
         [SerializeField] private RectTransform _userElementItemRectTransform;
-
         private GridElementType _gridElementTypeType;
+        
 
 
         public GridElementType GridElementType
