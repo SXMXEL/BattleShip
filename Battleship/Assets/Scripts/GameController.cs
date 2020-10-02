@@ -19,6 +19,7 @@ public class GameController : MonoBehaviour
     [SerializeField] private UserShipsSetPanel _userShipsSetPanel;
     [SerializeField] private SettingsMenu _settingsMenu;
     [SerializeField] private SoundManager _soundManager;
+    [SerializeField] private ScrollManager _scrollManager;
     private DataManager _dataManager;
     private SessionDataManager _sessionDataManager;
     [SerializeField] private ElementItem _gridCell;
@@ -50,17 +51,17 @@ public class GameController : MonoBehaviour
     {
         _dataManager = new DataManager();
         _sessionDataManager = new SessionDataManager();
-        _soundManager.Init();
+        _soundManager.Init(_dataManager);
+        _settingsMenu.Init(BackToStartMenu, _dataManager);
+        _userShipsSetPanel.Init(ShipsSetPanelQuit, _userGridsCells);
         _startButton.onClick.RemoveAllListeners();
         _startButton.onClick.AddListener(GameStart);
         _settingsMenuButton.onClick.RemoveAllListeners();
         _settingsMenuButton.onClick.AddListener(ToSettingsMenu);
-        _settingsMenu.Init(BackToStartMenu);
         _restartButton.onClick.RemoveAllListeners();
         _restartButton.onClick.AddListener(Restart);
         _backToStartMenuButton.onClick.RemoveAllListeners();
         _backToStartMenuButton.onClick.AddListener(BackToStartMenu);
-        _userShipsSetPanel.Init(ShipsSetPanelQuit, _userGridsCells);
         GridCreate(_userGridsCells, null, _userGridContainer, OwnerType.User);
         GridCreate(_computerGridsCells, OnElementPressedForAttack, _computerGridContainer, OwnerType.Computer);
     }
@@ -105,6 +106,7 @@ public class GameController : MonoBehaviour
             {
                 _userGridsCells[i, j].GridElementType = GridElementType.None;
                 _computerGridsCells[i, j].GridElementType = GridElementType.None;
+                _userShipsSetPanel._usersShipsCoordinates[i, j].GridElementType = GridElementType.None;
             }
         }
 
@@ -169,10 +171,12 @@ public class GameController : MonoBehaviour
                 case GridElementType.None:
                     currentElementItem.GridElementType = GridElementType.Miss;
                     _soundManager.PlaySfx(SfxType.Miss);
+                    _scrollManager.LogGenerate(_userGridsCells);
                     return;
                 case GridElementType.Ship:
                     currentElementItem.GridElementType = GridElementType.DestroyedShip;
                     _soundManager.PlaySfx(SfxType.Explosion);
+                    _scrollManager.LogGenerate(_userGridsCells);
                     _sessionDataManager.ComputerHitShipsCount++;
                     break;
                 case GridElementType.DestroyedShip:
@@ -195,11 +199,13 @@ public class GameController : MonoBehaviour
                 case GridElementType.None:
                     elementItem.GridElementType = GridElementType.Miss;
                     _soundManager.PlaySfx(SfxType.Miss);
+                    _scrollManager.LogGenerate(_computerGridsCells);
                     ComputerAttack();
                     break;
                 case GridElementType.Ship:
                     elementItem.GridElementType = GridElementType.DestroyedShip;
                     _soundManager.PlaySfx(SfxType.Explosion);
+                    _scrollManager.LogGenerate(_computerGridsCells);
                     _sessionDataManager.UserHitShipsCount++;
                     break;
                 case GridElementType.DestroyedShip:

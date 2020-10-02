@@ -12,8 +12,8 @@ public class UserShipsSetPanel : MonoBehaviour
     [SerializeField] private RectTransform _userShipsSetGridContainer;
     private static GameController _gameController;
     private const int GridSize = GameController.GridSize;
-    private UsersElementItem[,] _usersShipsCoordinates = new UsersElementItem[GridSize, GridSize];
-    
+    public UsersElementItem[,] _usersShipsCoordinates = new UsersElementItem[GridSize, GridSize];
+
 
     public void Init(Action onShipsSetPanelQuit, ElementItem[,] _userGrid)
     {
@@ -43,9 +43,13 @@ public class UserShipsSetPanel : MonoBehaviour
             usersElementItem.GridElementType = GridElementType.Ship;
             _soundManager.PlaySfx(SfxType.ShipPlaceSound);
         }
-        
-        _shipsSetPanelQuitButton.interactable = true;
+        if (_usersShipsCoordinates.Cast<UsersElementItem>().Where(data => data.GridElementType == GridElementType.Ship)
+            .ToList().Count > 19)
+        {
+            _shipsSetPanelQuitButton.interactable = true;
+        }
     }
+
 
     private void ShipSetGridCreate(UsersElementItem[,] usersElementItems,
         Action<UsersElementItem> onElementPressed,
@@ -64,5 +68,6 @@ public class UserShipsSetPanel : MonoBehaviour
                 usersElementItems[i, j] = usersElementItem;
             }
         }
+
     }
 }

@@ -10,9 +10,11 @@ public class SettingsMenu : MonoBehaviour
     [SerializeField] private Sprite currentSoundButtonIcon;
     private DataManager _dataManager;
 
-    public void Init(Action onBackToStartMenuAction)
+   
+
+    public void Init(Action onBackToStartMenuAction, DataManager dataManager)
     {
-        _dataManager = new DataManager();
+        _dataManager = dataManager;
         _backToStartMenuButton.onClick.RemoveAllListeners();
         _backToStartMenuButton.onClick.AddListener(onBackToStartMenuAction.Invoke);
         _muteButton.onClick.RemoveAllListeners();

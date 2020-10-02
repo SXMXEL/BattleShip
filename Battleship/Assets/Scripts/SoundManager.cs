@@ -16,9 +16,9 @@ public class SoundManager : MonoBehaviour
     [SerializeField] private AudioSource _audio;
     [SerializeField] private float _delayTime = 0.3f;
 
-    public void Init()
+    public void Init(DataManager dataManager)
     {
-        _dataManager = new DataManager();
+        _dataManager = dataManager;
     }
 
     public void PlaySfx(SfxType sfxType)
