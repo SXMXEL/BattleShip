@@ -171,12 +171,12 @@ public class GameController : MonoBehaviour
                 case GridElementType.None:
                     currentElementItem.GridElementType = GridElementType.Miss;
                     _soundManager.PlaySfx(SfxType.Miss);
-                    _scrollManager.LogGenerate(_userGridsCells);
+                    _scrollManager.LogGenerate(_userGridsCells, OwnerType.Computer);
                     return;
                 case GridElementType.Ship:
                     currentElementItem.GridElementType = GridElementType.DestroyedShip;
                     _soundManager.PlaySfx(SfxType.Explosion);
-                    _scrollManager.LogGenerate(_userGridsCells);
+                    _scrollManager.LogGenerate(_userGridsCells, OwnerType.Computer);
                     _sessionDataManager.ComputerHitShipsCount++;
                     break;
                 case GridElementType.DestroyedShip:
@@ -199,13 +199,13 @@ public class GameController : MonoBehaviour
                 case GridElementType.None:
                     elementItem.GridElementType = GridElementType.Miss;
                     _soundManager.PlaySfx(SfxType.Miss);
-                    _scrollManager.LogGenerate(_computerGridsCells);
+                    _scrollManager.LogGenerate(_computerGridsCells, OwnerType.User);
                     ComputerAttack();
                     break;
                 case GridElementType.Ship:
                     elementItem.GridElementType = GridElementType.DestroyedShip;
                     _soundManager.PlaySfx(SfxType.Explosion);
-                    _scrollManager.LogGenerate(_computerGridsCells);
+                    _scrollManager.LogGenerate(_computerGridsCells, OwnerType.User);
                     _sessionDataManager.UserHitShipsCount++;
                     break;
                 case GridElementType.DestroyedShip:

@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 7697183770514927972}
   - component: {fileID: 8178474363887892851}
   m_Layer: 5
-  m_Name: ComputerAttackLogText
+  m_Name: AttackLogText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -35,7 +35,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: -7.5}
-  m_SizeDelta: {x: 600, y: 115}
+  m_SizeDelta: {x: 425, y: 115}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &7697183770514927972
 CanvasRenderer:
@@ -114,7 +114,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: -504.77997, y: -475}
-  m_SizeDelta: {x: 600, y: 100}
+  m_SizeDelta: {x: 425, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &4144074629825939666
 CanvasRenderer:
