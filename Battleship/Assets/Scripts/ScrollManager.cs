@@ -15,7 +15,7 @@ public class ScrollManager : MonoBehaviour
     {
         SetLogText(grid);
         GenerateItem(ownerType);
-        _scrollView.verticalNormalizedPosition = 1;
+        _scrollView.verticalNormalizedPosition = 0;
     }
 
     private void GenerateItem(OwnerType ownerType)
@@ -49,11 +49,11 @@ public class ScrollManager : MonoBehaviour
                         break;
                     case GridElementType.DestroyedShip:
                         _logText = "Destroyed ship at " + (grid[i, j].Coordinates.X + 1).ToString() + " " +
-                                   (grid[i, j].Coordinates.Y + 1).ToString() + "\n";
+                                   (grid[i, j].Coordinates.Y + 1).ToString();
                         break;
                     case GridElementType.Miss:
                         _logText = "Missed attack at " + (grid[i, j].Coordinates.X + 1).ToString() + " " +
-                                   (grid[i, j].Coordinates.Y + 1).ToString() + "\n";
+                                   (grid[i, j].Coordinates.Y + 1).ToString();
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
