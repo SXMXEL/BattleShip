@@ -65,7 +65,7 @@ namespace Elements
             _ownerType = ownerType;
         }
 
-        public void ElementItemShake()
+        public void ElementItemShake ()
         {
             _elementItemTransform.DOShakePosition(3f, 2.5f);
         }

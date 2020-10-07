@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using Elements;
+using Pool;
 using UnityEngine;
 using UnityEngine.UI;
 using Random = UnityEngine.Random;
@@ -19,7 +20,7 @@ public class GameController : MonoBehaviour
     [SerializeField] private UserShipsSetPanel _userShipsSetPanel;
     [SerializeField] private SettingsMenu _settingsMenu;
     [SerializeField] private SoundManager _soundManager;
-    [SerializeField] private ScrollManager _scrollManager;
+    [SerializeField] private MessageItemsController _messageItemsController;
     private DataManager _dataManager;
     private SessionDataManager _sessionDataManager;
     [SerializeField] private ElementItem _gridCell;
@@ -49,11 +50,12 @@ public class GameController : MonoBehaviour
 
     private void Init()
     {
+        ToStartMenu();
         _dataManager = new DataManager();
         _sessionDataManager = new SessionDataManager();
         _soundManager.Init(_dataManager);
-        _settingsMenu.Init(BackToStartMenu, _dataManager);
-        _userShipsSetPanel.Init(ShipsSetPanelQuit, _userGridsCells);
+        _settingsMenu.Init(ToStartMenu, _dataManager);
+        _userShipsSetPanel.Init(ShipsSetPanelQuit, ()=>SetRandomShips(_userGridsCells), _userGridsCells);
         _startButton.onClick.RemoveAllListeners();
         _startButton.onClick.AddListener(GameStart);
         _settingsMenuButton.onClick.RemoveAllListeners();
@@ -61,7 +63,7 @@ public class GameController : MonoBehaviour
         _restartButton.onClick.RemoveAllListeners();
         _restartButton.onClick.AddListener(Restart);
         _backToStartMenuButton.onClick.RemoveAllListeners();
-        _backToStartMenuButton.onClick.AddListener(BackToStartMenu);
+        _backToStartMenuButton.onClick.AddListener(ToStartMenu);
         GridCreate(_userGridsCells, null, _userGridContainer, OwnerType.User);
         GridCreate(_computerGridsCells, OnElementPressedForAttack, _computerGridContainer, OwnerType.Computer);
     }
@@ -90,7 +92,7 @@ public class GameController : MonoBehaviour
         _settingsMenuObject.SetActive(false);
     }
 
-    private void BackToStartMenu()
+    private void ToStartMenu()
     {
         _startMenuObject.SetActive(true);
         _shipsSetPanelObject.SetActive(false);
@@ -117,7 +119,7 @@ public class GameController : MonoBehaviour
     }
 
 
-    private static void SetRandomShips(ElementItem[,] grid)
+    private void SetRandomShips(ElementItem[,] grid )
     {
         while (grid.Cast<ElementItem>().Where(data => data.GridElementType == GridElementType.Ship).ToList().Count
                < GridSize * GridSize * 0.2f)
@@ -157,7 +159,7 @@ public class GameController : MonoBehaviour
             SetRandomShips(_computerGridsCells);
         }
     }
-
+    
 
     private void ComputerAttack()
     {
@@ -171,12 +173,12 @@ public class GameController : MonoBehaviour
                 case GridElementType.None:
                     currentElementItem.GridElementType = GridElementType.Miss;
                     _soundManager.PlaySfx(SfxType.Miss);
-                    _scrollManager.LogGenerate(_userGridsCells, OwnerType.Computer);
+                    _messageItemsController.LogGenerate(_userGridsCells[currentElementItem.Coordinates.X, currentElementItem.Coordinates.Y], OwnerType.Computer);
                     return;
                 case GridElementType.Ship:
                     currentElementItem.GridElementType = GridElementType.DestroyedShip;
                     _soundManager.PlaySfx(SfxType.Explosion);
-                    _scrollManager.LogGenerate(_userGridsCells, OwnerType.Computer);
+                    _messageItemsController.LogGenerate(_userGridsCells[currentElementItem.Coordinates.X, currentElementItem.Coordinates.Y], OwnerType.Computer);
                     _sessionDataManager.ComputerHitShipsCount++;
                     break;
                 case GridElementType.DestroyedShip:
@@ -199,13 +201,13 @@ public class GameController : MonoBehaviour
                 case GridElementType.None:
                     elementItem.GridElementType = GridElementType.Miss;
                     _soundManager.PlaySfx(SfxType.Miss);
-                    _scrollManager.LogGenerate(_computerGridsCells, OwnerType.User);
+                    _messageItemsController.LogGenerate(_computerGridsCells[elementItem.Coordinates.X, elementItem.Coordinates.Y], OwnerType.User);
                     ComputerAttack();
                     break;
                 case GridElementType.Ship:
                     elementItem.GridElementType = GridElementType.DestroyedShip;
                     _soundManager.PlaySfx(SfxType.Explosion);
-                    _scrollManager.LogGenerate(_computerGridsCells, OwnerType.User);
+                    _messageItemsController.LogGenerate(_computerGridsCells[elementItem.Coordinates.X, elementItem.Coordinates.Y], OwnerType.User);
                     _sessionDataManager.UserHitShipsCount++;
                     break;
                 case GridElementType.DestroyedShip:

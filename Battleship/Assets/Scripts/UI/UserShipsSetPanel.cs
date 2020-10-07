@@ -8,6 +8,7 @@ public class UserShipsSetPanel : MonoBehaviour
 {
     [SerializeField] private SoundManager _soundManager;
     [SerializeField] private Button _shipsSetPanelQuitButton;
+    [SerializeField] private Button _randomShipSetButton;
     [SerializeField] private UsersElementItem _shipsSetGridCell;
     [SerializeField] private RectTransform _userShipsSetGridContainer;
     private static GameController _gameController;
@@ -15,12 +16,21 @@ public class UserShipsSetPanel : MonoBehaviour
     public UsersElementItem[,] _usersShipsCoordinates = new UsersElementItem[GridSize, GridSize];
 
 
-    public void Init(Action onShipsSetPanelQuit, ElementItem[,] _userGrid)
+    public void Init(Action onShipsSetPanelQuit, Action onSetRandomShipsAction, ElementItem[,] _userGrid)
     {
         _shipsSetPanelQuitButton.interactable = false;
         _shipsSetPanelQuitButton.onClick.RemoveAllListeners();
-        _shipsSetPanelQuitButton.onClick.AddListener(() => ShipsCoordinatesSwap(_userGrid));
-        _shipsSetPanelQuitButton.onClick.AddListener(onShipsSetPanelQuit.Invoke);
+        _shipsSetPanelQuitButton.onClick.AddListener(() =>
+        {
+            ShipsCoordinatesSwap(_userGrid);
+            onShipsSetPanelQuit.Invoke();
+        });
+        _randomShipSetButton.onClick.RemoveAllListeners();
+        _randomShipSetButton.onClick.AddListener(() => 
+            {
+            onSetRandomShipsAction.Invoke();
+            onShipsSetPanelQuit.Invoke();
+        });
         ShipSetGridCreate(_usersShipsCoordinates, SetShips, _userShipsSetGridContainer);
     }
 
@@ -43,6 +53,7 @@ public class UserShipsSetPanel : MonoBehaviour
             usersElementItem.GridElementType = GridElementType.Ship;
             _soundManager.PlaySfx(SfxType.ShipPlaceSound);
         }
+
         if (_usersShipsCoordinates.Cast<UsersElementItem>().Where(data => data.GridElementType == GridElementType.Ship)
             .ToList().Count > 19)
         {
@@ -68,6 +79,5 @@ public class UserShipsSetPanel : MonoBehaviour
                 usersElementItems[i, j] = usersElementItem;
             }
         }
-
     }
 }

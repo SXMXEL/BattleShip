@@ -13,4 +13,8 @@
     {
         return base.ToString() + "\nX = " + X + " Y = " + Y;
     }
+    public string ToNormalString()
+    {
+        return "X = " + (X + 1) + " Y = " + (Y + 1);
+    }
 }
