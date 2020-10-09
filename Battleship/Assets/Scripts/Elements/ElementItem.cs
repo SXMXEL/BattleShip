@@ -1,6 +1,8 @@
 ﻿using System;
 using DG.Tweening;
+using UI;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace Elements
@@ -11,7 +13,15 @@ namespace Elements
         Computer,
     }
 
-    public class ElementItem : MonoBehaviour
+    public enum ShipType
+    {
+        Submarine,
+        Frigate,
+        Schooner,
+        Boat,
+    }
+
+    public class ElementItem : MonoBehaviour, IDropHandler
     {
         [SerializeField] private Button _innerButton;
         [SerializeField] private ElementSpriteChange _elementSpriteChange;
@@ -19,7 +29,8 @@ namespace Elements
         public Coordinates Coordinates { private set; get; }
         private GridElementType _gridElementTypeType;
         private OwnerType _ownerType;
-
+        
+        
         public GridElementType GridElementType
         {
             set
@@ -43,12 +54,11 @@ namespace Elements
                             throw new ArgumentOutOfRangeException();
                     }
                 }
-                _elementSpriteChange.ChangeSprite(currentGridElementType);
+                // _elementSpriteChange.ChangeSprite(currentGridElementType);
 
             }
             get => _gridElementTypeType;
         }
-
 
         public void Init(
             Coordinates coordinates,
@@ -63,6 +73,16 @@ namespace Elements
             _innerButton.onClick.AddListener(ElementItemShake);
             GridElementType = gridElementType;
             _ownerType = ownerType;
+        }
+
+        public void OnDrop(PointerEventData eventData)
+        {
+            Debug.Log("OnDrop");
+            if (eventData.pointerDrag != null)
+            {
+                eventData.pointerDrag.GetComponent<RectTransform>().anchoredPosition =
+                    GetComponent<RectTransform>().anchoredPosition;
+            }
         }
 
         public void ElementItemShake ()

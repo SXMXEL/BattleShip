@@ -1,229 +1,284 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Elements;
-using Pool;
 using UnityEngine;
 using UnityEngine.UI;
 using Random = UnityEngine.Random;
 
-
-public enum GridElementType
+namespace UI
 {
-    None,
-    Ship,
-    DestroyedShip,
-    Miss
-}
-
-public class GameController : MonoBehaviour
-{
-    [SerializeField] private UserShipsSetPanel _userShipsSetPanel;
-    [SerializeField] private SettingsMenu _settingsMenu;
-    [SerializeField] private SoundManager _soundManager;
-    [SerializeField] private MessageItemsController _messageItemsController;
-    private DataManager _dataManager;
-    private SessionDataManager _sessionDataManager;
-    [SerializeField] private ElementItem _gridCell;
-    [SerializeField] private RectTransform _userGridContainer;
-    [SerializeField] private RectTransform _computerGridContainer;
-    [SerializeField] private Button _startButton;
-    [SerializeField] private Button _restartButton;
-    [SerializeField] private Button _backToStartMenuButton;
-    [SerializeField] private Button _settingsMenuButton;
-    [SerializeField] private Text _computerScoreText;
-    [SerializeField] private Text _userScoreText;
-    [SerializeField] private Text _winnerText;
-    [SerializeField] private GameObject _startMenuObject;
-    [SerializeField] private GameObject _settingsMenuObject;
-    [SerializeField] private GameObject _shipsSetPanelObject;
-    [SerializeField] private GameObject _gamePhaseObject;
-    [SerializeField] private GameObject _winnerPanelObject;
-    public const int GridSize = 10;
-    private readonly ElementItem[,] _userGridsCells = new ElementItem[GridSize, GridSize];
-    private readonly ElementItem[,] _computerGridsCells = new ElementItem[GridSize, GridSize];
-
-
-    private void Start()
+    public enum GridElementType
     {
-        Init();
+        None,
+        Ship,
+        DestroyedShip,
+        Miss
     }
 
-    private void Init()
+    public class GameController : MonoBehaviour
     {
-        ToStartMenu();
-        _dataManager = new DataManager();
-        _sessionDataManager = new SessionDataManager();
-        _soundManager.Init(_dataManager);
-        _settingsMenu.Init(ToStartMenu, _dataManager);
-        _userShipsSetPanel.Init(ShipsSetPanelQuit, ()=>SetRandomShips(_userGridsCells), _userGridsCells);
-        _startButton.onClick.RemoveAllListeners();
-        _startButton.onClick.AddListener(GameStart);
-        _settingsMenuButton.onClick.RemoveAllListeners();
-        _settingsMenuButton.onClick.AddListener(ToSettingsMenu);
-        _restartButton.onClick.RemoveAllListeners();
-        _restartButton.onClick.AddListener(Restart);
-        _backToStartMenuButton.onClick.RemoveAllListeners();
-        _backToStartMenuButton.onClick.AddListener(ToStartMenu);
-        GridCreate(_userGridsCells, null, _userGridContainer, OwnerType.User);
-        GridCreate(_computerGridsCells, OnElementPressedForAttack, _computerGridContainer, OwnerType.Computer);
-    }
+        [SerializeField] private UserShipsSetPanel _userShipsSetPanel;
+        [SerializeField] private SettingsMenu _settingsMenu;
+        [SerializeField] private SoundManager _soundManager;
+        [SerializeField] private MessageItemsController _messageItemsController;
+        private DataManager _dataManager;
+        private SessionDataManager _sessionDataManager;
+        [SerializeField] private ElementItem _gridCell;
+        [SerializeField] private RectTransform _userGridContainer;
+        [SerializeField] private RectTransform _computerGridContainer;
+        [SerializeField] private Button _startButton;
+        [SerializeField] private Button _restartButton;
+        [SerializeField] private Button _backToStartMenuButton;
+        [SerializeField] private Button _settingsMenuButton;
+        [SerializeField] private Text _computerScoreText;
+        [SerializeField] private Text _userScoreText;
+        [SerializeField] private Text _winnerText;
+        [SerializeField] private GameObject _startMenuObject;
+        [SerializeField] private GameObject _settingsMenuObject;
+        [SerializeField] private GameObject _shipsSetPanelObject;
+        [SerializeField] private GameObject _gamePhaseObject;
+        [SerializeField] private GameObject _winnerPanelObject;
+        public const int GridSize = 10;
+        private readonly ElementItem[,] _userGridsCells = new ElementItem[GridSize, GridSize];
+        private readonly ElementItem[,] _computerGridsCells = new ElementItem[GridSize, GridSize];
+        private List<Ship> _ships = new List<Ship>();
+        private Ship _ship;
 
-    private void GameStart()
-    {
-        _startMenuObject.SetActive(false);
-        _shipsSetPanelObject.SetActive(true);
-        _gamePhaseObject.SetActive(false);
-        _settingsMenuObject.SetActive(false);
-    }
 
-    private void ToSettingsMenu()
-    {
-        _startMenuObject.SetActive(false);
-        _shipsSetPanelObject.SetActive(false);
-        _gamePhaseObject.SetActive(false);
-        _settingsMenuObject.SetActive(true);
-    }
-
-    private void ShipsSetPanelQuit()
-    {
-        _startMenuObject.SetActive(false);
-        _shipsSetPanelObject.SetActive(false);
-        _gamePhaseObject.SetActive(true);
-        _settingsMenuObject.SetActive(false);
-    }
-
-    private void ToStartMenu()
-    {
-        _startMenuObject.SetActive(true);
-        _shipsSetPanelObject.SetActive(false);
-        _gamePhaseObject.SetActive(false);
-        _settingsMenuObject.SetActive(false);
-    }
-
-    private void Restart()
-    {
-        for (int i = 0; i < GridSize; i++)
+        private void Start()
         {
-            for (int j = 0; j < GridSize; j++)
-            {
-                _userGridsCells[i, j].GridElementType = GridElementType.None;
-                _computerGridsCells[i, j].GridElementType = GridElementType.None;
-                _userShipsSetPanel._usersShipsCoordinates[i, j].GridElementType = GridElementType.None;
-            }
+            Init();
         }
 
-        _sessionDataManager.UserHitShipsCount = 0;
-        _sessionDataManager.ComputerHitShipsCount = 0;
-        SetRandomShips(_computerGridsCells);
-        GameStart();
-    }
-
-
-    private void SetRandomShips(ElementItem[,] grid )
-    {
-        while (grid.Cast<ElementItem>().Where(data => data.GridElementType == GridElementType.Ship).ToList().Count
-               < GridSize * GridSize * 0.2f)
+        private void Init()
         {
-            var randRow = Random.Range(0, GridSize);
-            var randColumn = Random.Range(0, GridSize);
-            if (grid[randRow, randColumn].GridElementType == GridElementType.None)
-            {
-                grid[randRow, randColumn].GridElementType = GridElementType.Ship;
-            }
-        }
-    }
-
-
-    private void GridCreate(ElementItem[,] elementItems,
-        Action<ElementItem> onElementPressed,
-        RectTransform container,
-        OwnerType ownerType)
-    {
-        for (int i = 0; i < GridSize; i++)
-        {
-            for (int j = 0; j < GridSize; j++)
-            {
-                var elementItem = Instantiate(_gridCell, container);
-                elementItem.Init(
-                    new Coordinates(i, j),
-                    onElementPressed,
-                    GridElementType.None,
-                    ownerType);
-                elementItems[i, j] = elementItem;
-            }
+            ToStartMenu();
+            _dataManager = new DataManager();
+            _sessionDataManager = new SessionDataManager();
+            _soundManager.Init(_dataManager);
+            _settingsMenu.Init(ToStartMenu, _dataManager);
+            _userShipsSetPanel.Init(ShipsSetPanelQuit, () => SetRandomShips(_userGridsCells), _userGridsCells);
+            _startButton.onClick.RemoveAllListeners();
+            _startButton.onClick.AddListener(GameStart);
+            _settingsMenuButton.onClick.RemoveAllListeners();
+            _settingsMenuButton.onClick.AddListener(ToSettingsMenu);
+            _restartButton.onClick.RemoveAllListeners();
+            _restartButton.onClick.AddListener(Restart);
+            _backToStartMenuButton.onClick.RemoveAllListeners();
+            _backToStartMenuButton.onClick.AddListener(ToStartMenu);
+            GridCreate(_userGridsCells, null, _userGridContainer, OwnerType.User);
+            GridCreate(_computerGridsCells, OnElementPressedForAttack, _computerGridContainer, OwnerType.Computer);
         }
 
-
-        if (elementItems == _computerGridsCells)
+        private void GameStart()
         {
+            _startMenuObject.SetActive(false);
+            _shipsSetPanelObject.SetActive(true);
+            _gamePhaseObject.SetActive(false);
+            _settingsMenuObject.SetActive(false);
+        }
+
+        private void ToSettingsMenu()
+        {
+            _startMenuObject.SetActive(false);
+            _shipsSetPanelObject.SetActive(false);
+            _gamePhaseObject.SetActive(false);
+            _settingsMenuObject.SetActive(true);
+        }
+
+        private void ShipsSetPanelQuit()
+        {
+            _startMenuObject.SetActive(false);
+            _shipsSetPanelObject.SetActive(false);
+            _gamePhaseObject.SetActive(true);
+            _settingsMenuObject.SetActive(false);
+        }
+
+        private void ToStartMenu()
+        {
+            _startMenuObject.SetActive(true);
+            _shipsSetPanelObject.SetActive(false);
+            _gamePhaseObject.SetActive(false);
+            _settingsMenuObject.SetActive(false);
+        }
+
+        private void Restart()
+        {
+            for (int i = 0; i < GridSize; i++)
+            {
+                for (int j = 0; j < GridSize; j++)
+                {
+                    _userGridsCells[i, j].GridElementType = GridElementType.None;
+                    _computerGridsCells[i, j].GridElementType = GridElementType.None;
+                    _userShipsSetPanel._usersShipsCoordinates[i, j].GridElementType = GridElementType.None;
+                }
+            }
+
+            _sessionDataManager.UserHitShipsCount = 0;
+            _sessionDataManager.ComputerHitShipsCount = 0;
             SetRandomShips(_computerGridsCells);
+            GameStart();
         }
-    }
-    
 
-    private void ComputerAttack()
-    {
-        while (_computerGridsCells.Cast<ElementItem>().Any(data => data.GridElementType == GridElementType.Ship))
+        private void CreateShip(int size, ElementItem[,] grid)
         {
-            var randRow = Random.Range(0, GridSize);
-            var randColumn = Random.Range(0, GridSize);
-            var currentElementItem = _userGridsCells[randRow, randColumn];
-            switch (currentElementItem.GridElementType)
+            for (int i = 0; i < GridSize; i++)
             {
-                case GridElementType.None:
-                    currentElementItem.GridElementType = GridElementType.Miss;
-                    _soundManager.PlaySfx(SfxType.Miss);
-                    _messageItemsController.LogGenerate(_userGridsCells[currentElementItem.Coordinates.X, currentElementItem.Coordinates.Y], OwnerType.Computer);
-                    return;
-                case GridElementType.Ship:
-                    currentElementItem.GridElementType = GridElementType.DestroyedShip;
-                    _soundManager.PlaySfx(SfxType.Explosion);
-                    _messageItemsController.LogGenerate(_userGridsCells[currentElementItem.Coordinates.X, currentElementItem.Coordinates.Y], OwnerType.Computer);
-                    _sessionDataManager.ComputerHitShipsCount++;
-                    break;
-                case GridElementType.DestroyedShip:
-                    break;
-                case GridElementType.Miss:
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
+                for (int j = 0; j < GridSize; j++)
+                {
+                    var currentShip = Instantiate(_ship);
+                    _ship.Size = size;
+                    switch (_ship.Size)
+                    {
+                        case 1:
+                            currentShip.ShipCoordinates[0] = new Coordinates(i, j);
+                            break;
+                        case 2:
+                            currentShip.ShipCoordinates[0] = new Coordinates(i, j);
+                            currentShip.ShipCoordinates[1] = new Coordinates(i, j + 1);
+                            break;
+                        case 3:
+                            currentShip.ShipCoordinates[0] = new Coordinates(i, j);
+                            currentShip.ShipCoordinates[1] = new Coordinates(i, j + 1);
+                            currentShip.ShipCoordinates[2] = new Coordinates(i, j - 1);
+                            break;
+                        case 4:
+                            currentShip.ShipCoordinates[0] = new Coordinates(i, j);
+                            currentShip.ShipCoordinates[1] = new Coordinates(i, j + 1);
+                            currentShip.ShipCoordinates[2] = new Coordinates(i, j + 2);
+                            currentShip.ShipCoordinates[3] = new Coordinates(i, j - 1);
+                            break;
+                    }
+
+                    foreach (var coordinate in currentShip.ShipCoordinates)
+                    {
+                        if (grid.Cast<ElementItem>().Where(data => data.Coordinates 
+                                                                   == coordinate).All(data => data.GridElementType == GridElementType.None))
+                        {
+                            if (grid[coordinate.X, coordinate.Y].GridElementType == GridElementType.None)
+                            {
+                                grid[coordinate.X, coordinate.Y].GridElementType = GridElementType.Ship;
+                            }
+                        }
+                    }
+                }
             }
         }
-    }
 
-    private void OnElementPressedForAttack(ElementItem elementItem)
-    {
-        while (_userGridsCells.Cast<ElementItem>().Any(data => data.GridElementType == GridElementType.Ship)
-               && _computerGridsCells.Cast<ElementItem>().Any(data => data.GridElementType == GridElementType.Ship))
+        private void SetRandomShips(ElementItem[,] grid)
         {
-            switch (elementItem.GridElementType)
+            while (grid.Cast<ElementItem>().Where(data => data.GridElementType == GridElementType.Ship).ToList().Count
+                   < GridSize * GridSize * 0.2f)
             {
-                case GridElementType.None:
-                    elementItem.GridElementType = GridElementType.Miss;
-                    _soundManager.PlaySfx(SfxType.Miss);
-                    _messageItemsController.LogGenerate(_computerGridsCells[elementItem.Coordinates.X, elementItem.Coordinates.Y], OwnerType.User);
-                    ComputerAttack();
-                    break;
-                case GridElementType.Ship:
-                    elementItem.GridElementType = GridElementType.DestroyedShip;
-                    _soundManager.PlaySfx(SfxType.Explosion);
-                    _messageItemsController.LogGenerate(_computerGridsCells[elementItem.Coordinates.X, elementItem.Coordinates.Y], OwnerType.User);
-                    _sessionDataManager.UserHitShipsCount++;
-                    break;
-                case GridElementType.DestroyedShip:
-                    return;
-                case GridElementType.Miss:
-                    return;
+                var randRow = Random.Range(0, GridSize);
+                var randColumn = Random.Range(0, GridSize);
+                if (grid[randRow, randColumn].GridElementType == GridElementType.None)
+                {
+                    grid[randRow, randColumn].GridElementType = GridElementType.Ship;
+                }
             }
-            _userScoreText.text = "Hit: " + _sessionDataManager.UserHitShipsCount;
-            _computerScoreText.text = "Hit: " + _sessionDataManager.ComputerHitShipsCount;
         }
 
-        _winnerText.text =
-            _computerGridsCells.Cast<ElementItem>().Any(element => element.GridElementType == GridElementType.Ship)
-                ? "You LOSE"
-                : "You WIN";
 
-        _winnerPanelObject.SetActive(true);
+        private void GridCreate(ElementItem[,] elementItems,
+            Action<ElementItem> onElementPressed,
+            RectTransform container,
+            OwnerType ownerType)
+        {
+            for (int i = 0; i < GridSize; i++)
+            {
+                for (int j = 0; j < GridSize; j++)
+                {
+                    var elementItem = Instantiate(_gridCell, container);
+                    elementItem.Init(
+                        new Coordinates(i, j),
+                        onElementPressed,
+                        GridElementType.None,
+                        ownerType);
+                    elementItems[i, j] = elementItem;
+                }
+            }
+
+
+            if (elementItems == _computerGridsCells)
+            {
+                SetRandomShips(_computerGridsCells);
+            }
+        }
+
+
+        private void ComputerAttack()
+        {
+            while (_computerGridsCells.Cast<ElementItem>().Any(data => data.GridElementType == GridElementType.Ship))
+            {
+                var randRow = Random.Range(0, GridSize);
+                var randColumn = Random.Range(0, GridSize);
+                var currentElementItem = _userGridsCells[randRow, randColumn];
+                switch (currentElementItem.GridElementType)
+                {
+                    case GridElementType.None:
+                        currentElementItem.GridElementType = GridElementType.Miss;
+                        _soundManager.PlaySfx(SfxType.Miss);
+                        _messageItemsController.LogGenerate(
+                            _userGridsCells[currentElementItem.Coordinates.X, currentElementItem.Coordinates.Y],
+                            OwnerType.Computer);
+                        return;
+                    case GridElementType.Ship:
+                        currentElementItem.GridElementType = GridElementType.DestroyedShip;
+                        _soundManager.PlaySfx(SfxType.Explosion);
+                        _messageItemsController.LogGenerate(
+                            _userGridsCells[currentElementItem.Coordinates.X, currentElementItem.Coordinates.Y],
+                            OwnerType.Computer);
+                        _sessionDataManager.ComputerHitShipsCount++;
+                        break;
+                    case GridElementType.DestroyedShip:
+                        break;
+                    case GridElementType.Miss:
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
+        }
+
+        private void OnElementPressedForAttack(ElementItem elementItem)
+        {
+            while (_userGridsCells.Cast<ElementItem>().Any(data => data.GridElementType == GridElementType.Ship)
+                   && _computerGridsCells.Cast<ElementItem>().Any(data => data.GridElementType == GridElementType.Ship))
+            {
+                switch (elementItem.GridElementType)
+                {
+                    case GridElementType.None:
+                        elementItem.GridElementType = GridElementType.Miss;
+                        _soundManager.PlaySfx(SfxType.Miss);
+                        _messageItemsController.LogGenerate(
+                            _computerGridsCells[elementItem.Coordinates.X, elementItem.Coordinates.Y], OwnerType.User);
+                        ComputerAttack();
+                        break;
+                    case GridElementType.Ship:
+                        elementItem.GridElementType = GridElementType.DestroyedShip;
+                        _soundManager.PlaySfx(SfxType.Explosion);
+                        _messageItemsController.LogGenerate(
+                            _computerGridsCells[elementItem.Coordinates.X, elementItem.Coordinates.Y], OwnerType.User);
+                        _sessionDataManager.UserHitShipsCount++;
+                        break;
+                    case GridElementType.DestroyedShip:
+                        return;
+                    case GridElementType.Miss:
+                        return;
+                }
+
+                _userScoreText.text = "Hit: " + _sessionDataManager.UserHitShipsCount;
+                _computerScoreText.text = "Hit: " + _sessionDataManager.ComputerHitShipsCount;
+            }
+
+            _winnerText.text =
+                _computerGridsCells.Cast<ElementItem>().Any(element => element.GridElementType == GridElementType.Ship)
+                    ? "You LOSE"
+                    : "You WIN";
+
+            _winnerPanelObject.SetActive(true);
+        }
     }
 }

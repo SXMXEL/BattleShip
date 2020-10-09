@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Elements;
 using Pool;
+using UI;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -44,10 +45,10 @@ public class MessageItemsController : MonoBehaviour
             case GridElementType.Ship:
                 break;
             case GridElementType.DestroyedShip:
-                tempText = "Destroyed ship at " + (gridElement.Coordinates.ToNormalString());
+                tempText = "Destroyed ship at  " + (gridElement.Coordinates.ToNormalString());
                 break;
             case GridElementType.Miss:
-                tempText = "Missed attack at " + (gridElement.Coordinates.ToNormalString());
+                tempText = "Missed attack at  " + (gridElement.Coordinates.ToNormalString());
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
