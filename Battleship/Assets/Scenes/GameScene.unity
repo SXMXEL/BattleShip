@@ -345,6 +345,7 @@ GameObject:
   - component: {fileID: 121066471}
   - component: {fileID: 121066473}
   - component: {fileID: 121066472}
+  - component: {fileID: 121066474}
   m_Layer: 5
   m_Name: SubmarineContainer
   m_TagString: Untagged
@@ -367,10 +368,10 @@ RectTransform:
   m_Father: {fileID: 1953263395}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.15857148, y: 0.78142864}
-  m_AnchorMax: {x: 0.84571433, y: 0.9628572}
-  m_AnchoredPosition: {x: -1.5, y: 1}
-  m_SizeDelta: {x: 3, y: 0}
+  m_AnchorMin: {x: 0.07285715, y: 0.7928572}
+  m_AnchorMax: {x: 0.5542857, y: 0.9671429}
+  m_AnchoredPosition: {x: 4.299988, y: 0}
+  m_SizeDelta: {x: -8.546753, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &121066472
 MonoBehaviour:
@@ -409,6 +410,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 121066470}
   m_CullTransparentMesh: 0
+--- !u!114 &121066474
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 121066470}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 80915a1d17577e746a8b3f85508d7152, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &306679981
 GameObject:
   m_ObjectHideFlags: 0
@@ -562,7 +575,7 @@ RectTransform:
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0.022575982}
-  m_AnchorMax: {x: 0.92349017, y: 0.685792}
+  m_AnchorMax: {x: 0.94600004, y: 0.685792}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -2368,7 +2381,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1155702024
 RectTransform:
   m_ObjectHideFlags: 0
@@ -3006,6 +3019,9 @@ GameObject:
   - component: {fileID: 1805051410}
   - component: {fileID: 1805051412}
   - component: {fileID: 1805051411}
+  - component: {fileID: 1805051414}
+  - component: {fileID: 1805051413}
+  - component: {fileID: 1805051415}
   m_Layer: 5
   m_Name: Submarine
   m_TagString: Untagged
@@ -3022,16 +3038,16 @@ RectTransform:
   m_GameObject: {fileID: 1805051409}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 3.5, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 121066471}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 1, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0.000061035156, y: -24.6}
-  m_SizeDelta: {x: 280, y: -49.138252}
-  m_Pivot: {x: 1, y: 0.5}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0.23700002, y: 0.41170838}
+  m_AnchoredPosition: {x: 125.3, y: 35.886}
+  m_SizeDelta: {x: -6, y: -5}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1805051411
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3069,6 +3085,53 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1805051409}
   m_CullTransparentMesh: 0
+--- !u!225 &1805051413
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1805051409}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
+--- !u!114 &1805051414
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1805051409}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a48107758c9ccfe458957b285ecc9b22, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _gameController: {fileID: 1915152167}
+  _canvas: {fileID: 2033007037}
+--- !u!114 &1805051415
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1805051409}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d7ece58ef18170441bda118e0f6a04fc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _gameController: {fileID: 0}
+  _canvas: {fileID: 0}
+  ShipType: 0
+  ShipItem:
+  - {fileID: 8512382937802705062, guid: 0ba7c994609e3294089864de4b4558ae, type: 3}
+  - {fileID: 8512382937802705062, guid: 0ba7c994609e3294089864de4b4558ae, type: 3}
+  - {fileID: 8512382937802705062, guid: 0ba7c994609e3294089864de4b4558ae, type: 3}
+  - {fileID: 8512382937802705062, guid: 0ba7c994609e3294089864de4b4558ae, type: 3}
+  ShipSprite: {fileID: 21300000, guid: a94d905dbeb181d4393cfec46b80b925, type: 3}
 --- !u!1 &1807821297
 GameObject:
   m_ObjectHideFlags: 0
@@ -3425,6 +3488,8 @@ MonoBehaviour:
   _settingsMenu: {fileID: 1560687376}
   _soundManager: {fileID: 416892416}
   _messageItemsController: {fileID: 1879017571}
+  draggable: {fileID: 0}
+  _ship: {fileID: 0}
   _gridCell: {fileID: 8512382937802705062, guid: 0ba7c994609e3294089864de4b4558ae,
     type: 3}
   _userGridContainer: {fileID: 1437940405}
@@ -3472,7 +3537,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1953263395
 RectTransform:
   m_ObjectHideFlags: 0

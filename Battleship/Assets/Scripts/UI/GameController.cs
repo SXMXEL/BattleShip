@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using DragDropFunctions;
 using Elements;
+using Pool;
 using UnityEngine;
 using UnityEngine.UI;
 using Random = UnityEngine.Random;
@@ -24,6 +26,7 @@ namespace UI
         [SerializeField] private MessageItemsController _messageItemsController;
         private DataManager _dataManager;
         private SessionDataManager _sessionDataManager;
+        [SerializeField] private Ship _ship;
         [SerializeField] private ElementItem _gridCell;
         [SerializeField] private RectTransform _userGridContainer;
         [SerializeField] private RectTransform _computerGridContainer;
@@ -43,8 +46,6 @@ namespace UI
         private readonly ElementItem[,] _userGridsCells = new ElementItem[GridSize, GridSize];
         private readonly ElementItem[,] _computerGridsCells = new ElementItem[GridSize, GridSize];
         private List<Ship> _ships = new List<Ship>();
-        private Ship _ship;
-
 
         private void Start()
         {
@@ -69,6 +70,10 @@ namespace UI
             _backToStartMenuButton.onClick.AddListener(ToStartMenu);
             GridCreate(_userGridsCells, null, _userGridContainer, OwnerType.User);
             GridCreate(_computerGridsCells, OnElementPressedForAttack, _computerGridContainer, OwnerType.Computer);
+            
+            
+            
+            _ship.Init(GetNearestElement, _userGridsCells);
         }
 
         private void GameStart()
@@ -120,51 +125,7 @@ namespace UI
             SetRandomShips(_computerGridsCells);
             GameStart();
         }
-
-        private void CreateShip(int size, ElementItem[,] grid)
-        {
-            for (int i = 0; i < GridSize; i++)
-            {
-                for (int j = 0; j < GridSize; j++)
-                {
-                    var currentShip = Instantiate(_ship);
-                    _ship.Size = size;
-                    switch (_ship.Size)
-                    {
-                        case 1:
-                            currentShip.ShipCoordinates[0] = new Coordinates(i, j);
-                            break;
-                        case 2:
-                            currentShip.ShipCoordinates[0] = new Coordinates(i, j);
-                            currentShip.ShipCoordinates[1] = new Coordinates(i, j + 1);
-                            break;
-                        case 3:
-                            currentShip.ShipCoordinates[0] = new Coordinates(i, j);
-                            currentShip.ShipCoordinates[1] = new Coordinates(i, j + 1);
-                            currentShip.ShipCoordinates[2] = new Coordinates(i, j - 1);
-                            break;
-                        case 4:
-                            currentShip.ShipCoordinates[0] = new Coordinates(i, j);
-                            currentShip.ShipCoordinates[1] = new Coordinates(i, j + 1);
-                            currentShip.ShipCoordinates[2] = new Coordinates(i, j + 2);
-                            currentShip.ShipCoordinates[3] = new Coordinates(i, j - 1);
-                            break;
-                    }
-
-                    foreach (var coordinate in currentShip.ShipCoordinates)
-                    {
-                        if (grid.Cast<ElementItem>().Where(data => data.Coordinates 
-                                                                   == coordinate).All(data => data.GridElementType == GridElementType.None))
-                        {
-                            if (grid[coordinate.X, coordinate.Y].GridElementType == GridElementType.None)
-                            {
-                                grid[coordinate.X, coordinate.Y].GridElementType = GridElementType.Ship;
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        
 
         private void SetRandomShips(ElementItem[,] grid)
         {
@@ -279,6 +240,29 @@ namespace UI
                     : "You WIN";
 
             _winnerPanelObject.SetActive(true);
+        }
+
+        private ElementItem GetNearestElement(Vector2 targetPosition)
+        {
+            var elements = _userGridsCells.Cast<ElementItem>().ToList();
+            var firstElementItem = elements[0];
+            var secondElementItem = elements[1];
+            var nearestPossibleDistance =
+                Vector2.Distance(elements[0].transform.position, elements[1].transform.position);
+            ElementItem nearestElementItem = null;
+            float nearestDistance = float.MaxValue;
+            foreach (ElementItem elementItem in _userGridsCells)
+            {
+                var currentDistance = Vector2.Distance(targetPosition, elementItem.transform.position);
+                if (currentDistance < nearestDistance
+                    && currentDistance > nearestPossibleDistance)
+                {
+                    nearestElementItem = elementItem;
+                    nearestDistance = currentDistance;
+                }
+            }
+
+            return nearestElementItem;
         }
     }
 }

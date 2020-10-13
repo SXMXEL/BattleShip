@@ -29,12 +29,18 @@ namespace Elements
         public Coordinates Coordinates { private set; get; }
         private GridElementType _gridElementTypeType;
         private OwnerType _ownerType;
-        
-        
+
+        public ShipType ShipType
+        {
+            set => _shipType = value;
+            get => _shipType;
+        }
+        private ShipType _shipType;
+
+
         public GridElementType GridElementType
         {
-            set
-            {
+            set {
                 _gridElementTypeType = value;
                 var currentGridElementType = _gridElementTypeType;
                 if (_ownerType == OwnerType.Computer)
@@ -54,7 +60,7 @@ namespace Elements
                             throw new ArgumentOutOfRangeException();
                     }
                 }
-                // _elementSpriteChange.ChangeSprite(currentGridElementType);
+                _elementSpriteChange.ChangeSprite(currentGridElementType);
 
             }
             get => _gridElementTypeType;
@@ -77,7 +83,6 @@ namespace Elements
 
         public void OnDrop(PointerEventData eventData)
         {
-            Debug.Log("OnDrop");
             if (eventData.pointerDrag != null)
             {
                 eventData.pointerDrag.GetComponent<RectTransform>().anchoredPosition =
@@ -85,7 +90,7 @@ namespace Elements
             }
         }
 
-        public void ElementItemShake ()
+        private void ElementItemShake ()
         {
             _elementItemTransform.DOShakePosition(3f, 2.5f);
         }

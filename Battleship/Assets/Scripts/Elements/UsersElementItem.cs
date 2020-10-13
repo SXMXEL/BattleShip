@@ -22,7 +22,7 @@ namespace Elements
             {
                 _gridElementTypeType = value;
 
-                // _elementSpriteChange.ChangeSprite(_gridElementTypeType);
+                _elementSpriteChange.ChangeSprite(_gridElementTypeType);
             }
             get => _gridElementTypeType;
         }
