@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using DragDropFunctions;
 using Elements;
 using Pool;
 using UnityEngine;
@@ -26,7 +25,7 @@ namespace UI
         [SerializeField] private MessageItemsController _messageItemsController;
         private DataManager _dataManager;
         private SessionDataManager _sessionDataManager;
-        [SerializeField] private Ship _ship;
+        [SerializeField] private ShipFactory _shipFactory;
         [SerializeField] private ElementItem _gridCell;
         [SerializeField] private RectTransform _userGridContainer;
         [SerializeField] private RectTransform _computerGridContainer;
@@ -34,19 +33,11 @@ namespace UI
         [SerializeField] private Button _restartButton;
         [SerializeField] private Button _backToStartMenuButton;
         [SerializeField] private Button _settingsMenuButton;
-        [SerializeField] private Text _computerScoreText;
-        [SerializeField] private Text _userScoreText;
-        [SerializeField] private Text _winnerText;
-        [SerializeField] private GameObject _startMenuObject;
-        [SerializeField] private GameObject _settingsMenuObject;
-        [SerializeField] private GameObject _shipsSetPanelObject;
-        [SerializeField] private GameObject _gamePhaseObject;
-        [SerializeField] private GameObject _winnerPanelObject;
+        [SerializeField] private Text _computerScoreText, _userScoreText, _winnerText;
+        [SerializeField] private GameObject _startMenuObject, _settingsMenuObject, _shipsSetPanelObject, _gamePhaseObject, _winnerPanelObject;
         public const int GridSize = 10;
         private readonly ElementItem[,] _userGridsCells = new ElementItem[GridSize, GridSize];
         private readonly ElementItem[,] _computerGridsCells = new ElementItem[GridSize, GridSize];
-        private List<Ship> _ships = new List<Ship>();
-
         private void Start()
         {
             Init();
@@ -73,7 +64,7 @@ namespace UI
             
             
             
-            _ship.Init(GetNearestElement, _userGridsCells);
+            _shipFactory.Init(GetNearestElement, _userGridsCells);
         }
 
         private void GameStart()
@@ -245,8 +236,6 @@ namespace UI
         private ElementItem GetNearestElement(Vector2 targetPosition)
         {
             var elements = _userGridsCells.Cast<ElementItem>().ToList();
-            var firstElementItem = elements[0];
-            var secondElementItem = elements[1];
             var nearestPossibleDistance =
                 Vector2.Distance(elements[0].transform.position, elements[1].transform.position);
             ElementItem nearestElementItem = null;
@@ -261,8 +250,8 @@ namespace UI
                     nearestDistance = currentDistance;
                 }
             }
-
             return nearestElementItem;
         }
+
     }
 }

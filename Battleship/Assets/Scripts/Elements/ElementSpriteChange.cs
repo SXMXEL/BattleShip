@@ -2,7 +2,6 @@
 using System.Linq;
 using UI;
 using UnityEngine;
-using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 namespace Elements
@@ -22,11 +21,10 @@ namespace Elements
     public class ElementGfx
     {
         public GridElementType GridElementType => _gridElementType;
-
+        
         [SerializeField]
         private GridElementType _gridElementType;
-
-        
+       
         public Sprite Gfx => _gfx;
         [SerializeField] private Sprite _gfx;
 

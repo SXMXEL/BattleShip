@@ -61,7 +61,7 @@ namespace Elements
                     }
                 }
                 _elementSpriteChange.ChangeSprite(currentGridElementType);
-
+        
             }
             get => _gridElementTypeType;
         }
