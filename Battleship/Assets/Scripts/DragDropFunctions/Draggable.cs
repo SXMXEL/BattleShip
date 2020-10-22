@@ -1,12 +1,5 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using Elements;
-using UI;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.UI;
 
 namespace DragDropFunctions
 {
@@ -17,8 +10,6 @@ namespace DragDropFunctions
         [SerializeField] private Canvas _canvas;
         private RectTransform _rectTransform;
         private CanvasGroup _canvasGroup;
-        private ShipType _shipType;
-
         private void Awake()
         {
             _rectTransform = GetComponent<RectTransform>();
@@ -34,7 +25,6 @@ namespace DragDropFunctions
 
         public void OnDrag(PointerEventData eventData)
         {
-            Debug.Log("OnDrag");
             _rectTransform.anchoredPosition += eventData.delta / _canvas.scaleFactor;
             OnItemDrag(eventData);
         }
@@ -53,7 +43,9 @@ namespace DragDropFunctions
 
         public void OnPointerDown(PointerEventData eventData)
         {
-            Debug.Log("OnPointerDown");
+            OnPointerDownOnItem(eventData);
         }
+
+        protected abstract void OnPointerDownOnItem(PointerEventData eventData);
     }
 }
