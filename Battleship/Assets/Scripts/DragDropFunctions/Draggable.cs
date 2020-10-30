@@ -21,7 +21,10 @@ namespace DragDropFunctions
             Debug.Log("OnEndDrag");
             _canvasGroup.alpha = .6f;
             _canvasGroup.blocksRaycasts = false;
+            OnItemBeginDrag(eventData);
         }
+
+        protected abstract void OnItemBeginDrag(PointerEventData eventData);
 
         public void OnDrag(PointerEventData eventData)
         {

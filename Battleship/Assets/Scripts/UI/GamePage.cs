@@ -1,8 +1,7 @@
 ﻿using System;
-using DG.Tweening;
+using System.Linq;
 using Elements;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace UI
@@ -11,8 +10,7 @@ namespace UI
     {
         public Text ComputerScoreText, UserScoreText, WinnerText;
         public GameObject _winnerPanelObject;
-        [SerializeField]
-        private Button _restartButton, _backToStartMenuButton, _confirmShipsPositionsButton, _rotateButton;
+        [SerializeField] private Button _restartButton, _backToStartMenuButton, _confirmShipsPositionsButton;
         [SerializeField] private GameObject _computerGameObjects, _shipsContainer;
 
 
@@ -24,7 +22,6 @@ namespace UI
             _backToStartMenuButton.onClick.AddListener(OnSetPageState.Invoke);
             _confirmShipsPositionsButton.onClick.RemoveAllListeners();
             _confirmShipsPositionsButton.onClick.AddListener(ConfirmShipsPositions);
-            
         }
 
         private void ConfirmShipsPositions()

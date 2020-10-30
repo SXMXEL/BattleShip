@@ -2,10 +2,11 @@
 using System.Linq;
 using Elements;
 using Pool;
+using UI;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
-namespace UI
+namespace Managers
 {
     public enum PageState
     {
@@ -14,6 +15,7 @@ namespace UI
         ShipSetPage,
         GamePage
     }
+
     public enum GridElementType
     {
         None,
@@ -39,6 +41,7 @@ namespace UI
         public const int GridSize = 10;
         private readonly ElementItem[,] _userGridsCells = new ElementItem[GridSize, GridSize];
         private readonly ElementItem[,] _computerGridsCells = new ElementItem[GridSize, GridSize];
+
         private void Start()
         {
             Init();
@@ -50,10 +53,10 @@ namespace UI
             _dataManager = new DataManager();
             _sessionDataManager = new SessionDataManager();
             _soundManager.Init(_dataManager);
-            _startPage.Init(()=>SetPageState(PageState.ShipSetPage),
-                ()=> SetPageState(PageState.SettingsPage));
-            _settingsPage.Init(()=> SetPageState(PageState.StartPage), _dataManager);
-            _gamePage.Init(Restart,()=> SetPageState(PageState.GamePage));
+            _startPage.Init(() => SetPageState(PageState.ShipSetPage),
+                () => SetPageState(PageState.SettingsPage));
+            _settingsPage.Init(() => SetPageState(PageState.StartPage), _dataManager);
+            _gamePage.Init(Restart, () => SetPageState(PageState.GamePage));
             _userShipsSetPanel.Init(ShipsSetPanelQuit,
                 () => SetRandomShips(_userGridsCells), _userGridsCells);
             GridCreate(_userGridsCells, null, _userGridContainer, OwnerType.User);
@@ -93,7 +96,7 @@ namespace UI
                     throw new ArgumentOutOfRangeException();
             }
         }
-        
+
         private void ShipsSetPanelQuit()
         {
             _startPage.gameObject.SetActive(false);
@@ -102,13 +105,6 @@ namespace UI
             _settingsPage.gameObject.SetActive(false);
         }
 
-        private void ToStartMenu()
-        {
-            _startPage.gameObject.SetActive(false);
-            _userShipsSetPanel.gameObject.SetActive(false);
-            _gamePage.gameObject.SetActive(false);
-            _settingsPage.gameObject.SetActive(false);
-        }
 
         private void Restart()
         {
@@ -121,12 +117,13 @@ namespace UI
                     _userShipsSetPanel._usersShipsCoordinates[i, j].GridElementType = GridElementType.None;
                 }
             }
+
             _sessionDataManager.UserHitShipsCount = 0;
             _sessionDataManager.ComputerHitShipsCount = 0;
             SetRandomShips(_computerGridsCells);
             SetPageState(PageState.StartPage);
         }
-        
+
 
         private void SetRandomShips(ElementItem[,] grid)
         {
@@ -141,6 +138,7 @@ namespace UI
                 }
             }
         }
+
         private void GridCreate(ElementItem[,] elementItems,
             Action<ElementItem> onElementPressed,
             RectTransform container,
@@ -240,7 +238,5 @@ namespace UI
 
             _gamePage._winnerPanelObject.SetActive(true);
         }
-        
-        
     }
 }

@@ -1,27 +1,34 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using DG.Tweening;
 using DragDropFunctions;
-using UI;
+using Managers;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
 namespace Elements
 {
+    [RequireComponent(typeof(RectTransform))]
     public class Ship : Draggable
     {
         public Vector3[] _elementsPositions;
         public ShipType ShipType;
         public ElementItem[] ShipItems;
         private ElementItem[,] _userGrid;
+        private RectTransform _shipRectTransform;
         private Sprite _currentShipSprite;
         private readonly float _maxDelay = 1.3f;
         private bool _isTouched;
         private bool _isVertical;
         private float touchTime;
+        private Vector3 _defaultPosition;
+
 
         public void Init(ElementItem[,] userGrid)
         {
             _userGrid = userGrid;
+            _shipRectTransform = GetComponent<RectTransform>();
+            _defaultPosition = _shipRectTransform.position;
         }
 
 
@@ -47,6 +54,21 @@ namespace Elements
         }
 
 
+        protected override void OnItemBeginDrag(PointerEventData eventData)
+        {
+            if (ShipItems != null)
+            {
+                foreach (var shipItem in ShipItems)
+                {
+                    shipItem.GridElementType = GridElementType.None;
+                }
+            }
+            else
+            {
+                return;
+            }
+        }
+
         protected override void OnItemDrag(PointerEventData eventData)
         {
             Debug.Log("Item is dragging");
@@ -62,22 +84,51 @@ namespace Elements
             }
 
             Debug.Log("Nearest item is " + nearestElementItem.Coordinates);
-
             var x = nearestElementItem.Coordinates.X;
             var y = nearestElementItem.Coordinates.Y;
-            if (_isVertical == false)
+            if (!_isVertical)
             {
                 switch (ShipType)
                 {
                     case ShipType.Submarine:
-                        ShipItems = new[]
-                            {nearestElementItem, _userGrid[x, y + 1], _userGrid[x, y + 2], _userGrid[x, y - 1]};
+                        try
+                        {
+                            ShipItems = new[]
+                                {nearestElementItem, _userGrid[x, y + 1], _userGrid[x, y + 2], _userGrid[x, y - 1]};
+                        }
+                        catch (Exception e)
+                        {
+                            _shipRectTransform.position = _defaultPosition;
+                            Console.WriteLine(e);
+                            throw;
+                        }
+
                         break;
                     case ShipType.Frigate:
-                        ShipItems = new[] {nearestElementItem, _userGrid[x, y + 1], _userGrid[x, y - 1]};
+                        try
+                        {
+                            ShipItems = new[] {nearestElementItem, _userGrid[x, y + 1], _userGrid[x, y - 1]};
+                        }
+                        catch (Exception e)
+                        {
+                            _shipRectTransform.position = _defaultPosition;
+                            Console.WriteLine(e);
+                            throw;
+                        }
+                        
                         break;
                     case ShipType.Schooner:
-                        ShipItems = new[] {nearestElementItem, _userGrid[x, y + 1]};
+                        try
+                        {
+                            ShipItems = new[] {nearestElementItem, _userGrid[x, y + 1]};
+                        }
+                        catch (Exception e)
+                        {
+                            _shipRectTransform.position = _defaultPosition;
+                            Console.WriteLine(e);
+                            throw;
+                        }
+
                         break;
                     case ShipType.Boat:
                         ShipItems = new[] {nearestElementItem};
@@ -92,14 +143,42 @@ namespace Elements
                 switch (ShipType)
                 {
                     case ShipType.Submarine:
-                        ShipItems = new[]
-                            {nearestElementItem, _userGrid[x + 1, y], _userGrid[x + 2, y], _userGrid[x - 1, y]};
+                        try
+                        {
+                            ShipItems = new[]
+                                {nearestElementItem, _userGrid[x + 1, y], _userGrid[x + 2, y], _userGrid[x - 1, y]};
+                        }
+                        catch(Exception e)
+                        {
+                            _shipRectTransform.position = _defaultPosition;
+                            Console.WriteLine(e);
+                            throw;
+                        }
                         break;
                     case ShipType.Frigate:
-                        ShipItems = new[] {nearestElementItem, _userGrid[x + 1, y], _userGrid[x - 1, y]};
+                        try
+                        {
+                            ShipItems = new[] {nearestElementItem, _userGrid[x + 1, y], _userGrid[x - 1, y]};
+                        }
+                        catch(Exception e)
+                        {
+                            _shipRectTransform.position = _defaultPosition;
+                            Console.WriteLine(e);
+                            throw;
+                        }
+
                         break;
                     case ShipType.Schooner:
-                        ShipItems = new[] {nearestElementItem, _userGrid[x + 1, y]};
+                        try
+                        {
+                            ShipItems = new[] {nearestElementItem, _userGrid[x + 1, y]};
+                        }
+                        catch(Exception e)
+                        {
+                            _shipRectTransform.position = _defaultPosition;
+                            Console.WriteLine(e);
+                            throw;
+                        }
                         break;
                     case ShipType.Boat:
                         ShipItems = new[] {nearestElementItem};
@@ -110,18 +189,25 @@ namespace Elements
                 }
             }
 
-            foreach (var shipItem in ShipItems)
+            if (ShipItems.All(data => data.GridElementType == GridElementType.None))
             {
-                shipItem.GridElementType = GridElementType.Ship;
-            }
+                foreach (var shipItem in ShipItems)
+                {
+                    shipItem.GridElementType = GridElementType.Ship;
+                }
 
-            for (int i = 0; i < ShipItems.Length; i++)
+                for (int i = 0; i < ShipItems.Length; i++)
+                {
+                    _elementsPositions[i] = ShipItems[i].transform.position;
+                }
+
+                var centerOfVectors = CenterOfVectors(_elementsPositions);
+                _shipRectTransform.position = centerOfVectors;
+            }
+            else
             {
-                _elementsPositions[i] = ShipItems[i].transform.position;
+                _shipRectTransform.position = _defaultPosition;
             }
-
-            var centerOfVectors = CenterOfVectors(_elementsPositions);
-            GetComponent<RectTransform>().position = centerOfVectors;
         }
 
         protected override void OnPointerDownOnItem(PointerEventData eventData)
@@ -140,13 +226,13 @@ namespace Elements
 
         private Vector3 CenterOfVectors(Vector3[] vectors)
         {
-            Vector3 sum = new Vector3(0, 0, 0);
+            var sum = new Vector3(0, 0, 0);
             if (vectors == null || vectors.Length == 0)
             {
                 return sum;
             }
 
-            foreach (Vector3 vec in vectors)
+            foreach (var vec in vectors)
             {
                 sum += vec;
             }
@@ -154,7 +240,7 @@ namespace Elements
             return sum / vectors.Length;
         }
 
-        System.Collections.IEnumerator WaitForDoubleTap()
+        private System.Collections.IEnumerator WaitForDoubleTap()
         {
             yield return new WaitUntil(() => !_isTouched || Time.time >= touchTime + _maxDelay);
             if (Time.time >= touchTime + _maxDelay)
@@ -162,14 +248,15 @@ namespace Elements
                 yield break;
             }
 
-            if (GetComponent<RectTransform>().rotation == Quaternion.identity)
+            if (_shipRectTransform.position != _defaultPosition) yield break;
+            if (_shipRectTransform.rotation == Quaternion.identity)
             {
-                GetComponent<RectTransform>().DORotate(new Vector3(0, 0, 90), 1, RotateMode.Fast);
+                _shipRectTransform.DORotate(new Vector3(0, 0, 90), 1, RotateMode.Fast);
                 _isVertical = true;
             }
             else
             {
-                GetComponent<RectTransform>().DORotate(new Vector3(0, 0, 0), 1, RotateMode.Fast);
+                _shipRectTransform.DORotate(new Vector3(0, 0, 0), 1, RotateMode.Fast);
                 _isVertical = false;
             }
         }
