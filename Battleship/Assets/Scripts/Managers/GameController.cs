@@ -26,21 +26,22 @@ namespace Managers
 
     public class GameController : MonoBehaviour
     {
-        [SerializeField] private StartPage _startPage;
-        [SerializeField] private UserShipsSetPanel _userShipsSetPanel;
-        [SerializeField] private SettingsPage _settingsPage;
-        [SerializeField] private GamePage _gamePage;
-        [SerializeField] private SoundManager _soundManager;
-        [SerializeField] private MessageItemsController _messageItemsController;
         private DataManager _dataManager;
         private SessionDataManager _sessionDataManager;
+        [SerializeField] private SoundManager _soundManager;
+        [SerializeField] private StartPage _startPage;
+        [SerializeField] private SettingsPage _settingsPage;
+        [SerializeField] private GamePage _gamePage;
+        [SerializeField] private UserShipsSetPanel _userShipsSetPanel;
         [SerializeField] private ShipsManager _shipsManager;
+        [SerializeField] private MessageItemsController _messageItemsController;
         [SerializeField] private ElementItem _gridCell;
         [SerializeField] private RectTransform _userGridContainer;
         [SerializeField] private RectTransform _computerGridContainer;
         public const int GridSize = 10;
         private readonly ElementItem[,] _userGridsCells = new ElementItem[GridSize, GridSize];
         private readonly ElementItem[,] _computerGridsCells = new ElementItem[GridSize, GridSize];
+        public bool _confirm;
 
         private void Start()
         {
@@ -55,15 +56,19 @@ namespace Managers
             _soundManager.Init(_dataManager);
             _startPage.Init(() => SetPageState(PageState.ShipSetPage),
                 () => SetPageState(PageState.SettingsPage));
+            _gamePage.Init(Restart, () => SetPageState(PageState.StartPage), ConfirmPlace);
             _settingsPage.Init(() => SetPageState(PageState.StartPage), _dataManager);
-            _gamePage.Init(Restart, () => SetPageState(PageState.GamePage));
             _userShipsSetPanel.Init(ShipsSetPanelQuit,
                 () => SetRandomShips(_userGridsCells), _userGridsCells);
             GridCreate(_userGridsCells, null, _userGridContainer, OwnerType.User);
             GridCreate(_computerGridsCells, ElementPressedForAttack, _computerGridContainer, OwnerType.Computer);
-            _shipsManager.Init(_userGridsCells);
+            _shipsManager.Init(_userGridsCells, _confirm);
         }
-
+        
+        private void ConfirmPlace()
+        {
+            _confirm = true;
+        }
         private void SetPageState(PageState pageState)
         {
             switch (pageState)
@@ -117,7 +122,7 @@ namespace Managers
                     _userShipsSetPanel._usersShipsCoordinates[i, j].GridElementType = GridElementType.None;
                 }
             }
-
+            _gamePage.WinnerPanelObject.SetActive(false);
             _sessionDataManager.UserHitShipsCount = 0;
             _sessionDataManager.ComputerHitShipsCount = 0;
             SetRandomShips(_computerGridsCells);
@@ -236,7 +241,7 @@ namespace Managers
                     ? "You LOSE"
                     : "You WIN";
 
-            _gamePage._winnerPanelObject.SetActive(true);
+            _gamePage.WinnerPanelObject.SetActive(true);
         }
     }
 }

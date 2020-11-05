@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System.Collections.Generic;
 using System.Linq;
 using DG.Tweening;
 using DragDropFunctions;
@@ -11,16 +11,16 @@ namespace Elements
     [RequireComponent(typeof(RectTransform))]
     public class Ship : Draggable
     {
-        public Vector3[] _elementsPositions;
+        public Vector3[] ElementsPositions;
         public ShipType ShipType;
         public ElementItem[] ShipItems;
         private ElementItem[,] _userGrid;
         private RectTransform _shipRectTransform;
         private Sprite _currentShipSprite;
-        private readonly float _maxDelay = 1.3f;
+        private const float _maxDelay = 1.3f;
         private bool _isTouched;
         private bool _isVertical;
-        private float touchTime;
+        private float _touchTime;
         private Vector3 _defaultPosition;
 
 
@@ -56,16 +56,13 @@ namespace Elements
 
         protected override void OnItemBeginDrag(PointerEventData eventData)
         {
-            if (ShipItems != null)
+            if (ShipItems != null &&
+                ShipItems.All(data => data.GridElementType == GridElementType.Ship))
             {
                 foreach (var shipItem in ShipItems)
                 {
                     shipItem.GridElementType = GridElementType.None;
                 }
-            }
-            else
-            {
-                return;
             }
         }
 
@@ -77,6 +74,12 @@ namespace Elements
         protected override void OnItemEndDrag(PointerEventData eventData)
         {
             var nearestElementItem = GetNearestElement(eventData.position);
+            var userGridCoordinatesList = new List<Coordinates>();
+            foreach (var elementItem in _userGrid)
+            {
+                userGridCoordinatesList.Add(elementItem.Coordinates);
+            }
+
             if (nearestElementItem == null)
             {
                 Debug.Log("Nothing found");
@@ -91,42 +94,40 @@ namespace Elements
                 switch (ShipType)
                 {
                     case ShipType.Submarine:
-                        try
+                        if (userGridCoordinatesList.Any(data => data.X == x && data.Y == y + 1)
+                            && userGridCoordinatesList.Any(data => data.X == x && data.Y == y - 1)
+                            && userGridCoordinatesList.Any(data => data.X == x && data.Y == y + 2)
+                        )
                         {
                             ShipItems = new[]
                                 {nearestElementItem, _userGrid[x, y + 1], _userGrid[x, y + 2], _userGrid[x, y - 1]};
                         }
-                        catch (Exception e)
+                        else
                         {
                             _shipRectTransform.position = _defaultPosition;
-                            Console.WriteLine(e);
-                            throw;
                         }
 
                         break;
                     case ShipType.Frigate:
-                        try
+                        if (userGridCoordinatesList.Any(data => data.X == x && data.Y == y + 1)
+                            && userGridCoordinatesList.Any(data => data.X == x && data.Y == y - 1))
                         {
                             ShipItems = new[] {nearestElementItem, _userGrid[x, y + 1], _userGrid[x, y - 1]};
                         }
-                        catch (Exception e)
+                        else
                         {
                             _shipRectTransform.position = _defaultPosition;
-                            Console.WriteLine(e);
-                            throw;
                         }
-                        
+
                         break;
                     case ShipType.Schooner:
-                        try
+                        if (userGridCoordinatesList.Any(data => data.X == x && data.Y == y + 1))
                         {
                             ShipItems = new[] {nearestElementItem, _userGrid[x, y + 1]};
                         }
-                        catch (Exception e)
+                        else
                         {
                             _shipRectTransform.position = _defaultPosition;
-                            Console.WriteLine(e);
-                            throw;
                         }
 
                         break;
@@ -143,42 +144,42 @@ namespace Elements
                 switch (ShipType)
                 {
                     case ShipType.Submarine:
-                        try
+                        if (userGridCoordinatesList.Any(data => data.X == x + 1 && data.Y == y)
+                            && userGridCoordinatesList.Any(data => data.X == x -1 && data.Y == y )
+                            && userGridCoordinatesList.Any(data => data.X == x + 2 && data.Y == y)
+                        )
                         {
                             ShipItems = new[]
                                 {nearestElementItem, _userGrid[x + 1, y], _userGrid[x + 2, y], _userGrid[x - 1, y]};
                         }
-                        catch(Exception e)
+                        else
                         {
                             _shipRectTransform.position = _defaultPosition;
-                            Console.WriteLine(e);
-                            throw;
                         }
+
                         break;
                     case ShipType.Frigate:
-                        try
+                        if (userGridCoordinatesList.Any(data => data.X == x + 1 && data.Y == y)
+                            && userGridCoordinatesList.Any(data => data.X == x - 1 && data.Y == y))
                         {
                             ShipItems = new[] {nearestElementItem, _userGrid[x + 1, y], _userGrid[x - 1, y]};
                         }
-                        catch(Exception e)
+                        else
                         {
                             _shipRectTransform.position = _defaultPosition;
-                            Console.WriteLine(e);
-                            throw;
                         }
 
                         break;
                     case ShipType.Schooner:
-                        try
+                        if (userGridCoordinatesList.Any(data => data.X == x + 1 && data.Y == y))
                         {
                             ShipItems = new[] {nearestElementItem, _userGrid[x + 1, y]};
                         }
-                        catch(Exception e)
+                        else
                         {
                             _shipRectTransform.position = _defaultPosition;
-                            Console.WriteLine(e);
-                            throw;
                         }
+
                         break;
                     case ShipType.Boat:
                         ShipItems = new[] {nearestElementItem};
@@ -191,17 +192,17 @@ namespace Elements
 
             if (ShipItems.All(data => data.GridElementType == GridElementType.None))
             {
+                for (int i = 0; i < ShipItems.Length; i++)
+                {
+                    ElementsPositions[i] = ShipItems[i].transform.position;
+                }
+
+                var centerOfVectors = CenterOfVectors(ElementsPositions);
                 foreach (var shipItem in ShipItems)
                 {
                     shipItem.GridElementType = GridElementType.Ship;
                 }
 
-                for (int i = 0; i < ShipItems.Length; i++)
-                {
-                    _elementsPositions[i] = ShipItems[i].transform.position;
-                }
-
-                var centerOfVectors = CenterOfVectors(_elementsPositions);
                 _shipRectTransform.position = centerOfVectors;
             }
             else
@@ -215,7 +216,7 @@ namespace Elements
             if (!_isTouched)
             {
                 _isTouched = true;
-                touchTime = Time.time;
+                _touchTime = Time.time;
                 StartCoroutine(WaitForDoubleTap());
             }
             else
@@ -242,8 +243,8 @@ namespace Elements
 
         private System.Collections.IEnumerator WaitForDoubleTap()
         {
-            yield return new WaitUntil(() => !_isTouched || Time.time >= touchTime + _maxDelay);
-            if (Time.time >= touchTime + _maxDelay)
+            yield return new WaitUntil(() => !_isTouched || Time.time >= _touchTime + _maxDelay);
+            if (Time.time >= _touchTime + _maxDelay)
             {
                 yield break;
             }
@@ -251,12 +252,12 @@ namespace Elements
             if (_shipRectTransform.position != _defaultPosition) yield break;
             if (_shipRectTransform.rotation == Quaternion.identity)
             {
-                _shipRectTransform.DORotate(new Vector3(0, 0, 90), 1, RotateMode.Fast);
+                _shipRectTransform.DORotate(new Vector3(0, 0, 90), 1);
                 _isVertical = true;
             }
             else
             {
-                _shipRectTransform.DORotate(new Vector3(0, 0, 0), 1, RotateMode.Fast);
+                _shipRectTransform.DORotate(new Vector3(0, 0, 0), 1);
                 _isVertical = false;
             }
         }

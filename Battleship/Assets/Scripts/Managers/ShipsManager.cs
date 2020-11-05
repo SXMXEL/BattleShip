@@ -1,18 +1,22 @@
-﻿using UnityEngine;
+﻿using System;
+using Elements;
+using UnityEngine;
 
-namespace Elements
+namespace Managers
 {
-    
     public class ShipsManager : MonoBehaviour
     {
         public Ship[] Ships;
-        private const float _doubleClickTime = 0.2f;
-        private float _lastClickTime;
-        public void Init(ElementItem[,] userGrid)
+
+        public void Init(ElementItem[,] userGrid, bool confirm)
         {
             foreach (var ship in Ships)
             {
                 ship.Init(userGrid);
+                if (confirm)
+                {
+                    ship.CantDrag = true;
+                }
             }
         }
     }
