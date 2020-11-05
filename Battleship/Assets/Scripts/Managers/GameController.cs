@@ -1,13 +1,21 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using Elements;
+using Pool;
+using UI;
 using UnityEngine;
-using UnityEngine.UI;
 using Random = UnityEngine.Random;
 
-namespace UI
+namespace Managers
 {
+    public enum PageState
+    {
+        StartPage,
+        SettingsPage,
+        ShipSetPage,
+        GamePage
+    }
+
     public enum GridElementType
     {
         None,
@@ -18,33 +26,22 @@ namespace UI
 
     public class GameController : MonoBehaviour
     {
-        [SerializeField] private UserShipsSetPanel _userShipsSetPanel;
-        [SerializeField] private SettingsMenu _settingsMenu;
-        [SerializeField] private SoundManager _soundManager;
-        [SerializeField] private MessageItemsController _messageItemsController;
         private DataManager _dataManager;
         private SessionDataManager _sessionDataManager;
+        [SerializeField] private SoundManager _soundManager;
+        [SerializeField] private StartPage _startPage;
+        [SerializeField] private SettingsPage _settingsPage;
+        [SerializeField] private GamePage _gamePage;
+        [SerializeField] private UserShipsSetPanel _userShipsSetPanel;
+        [SerializeField] private ShipsManager _shipsManager;
+        [SerializeField] private MessageItemsController _messageItemsController;
         [SerializeField] private ElementItem _gridCell;
         [SerializeField] private RectTransform _userGridContainer;
         [SerializeField] private RectTransform _computerGridContainer;
-        [SerializeField] private Button _startButton;
-        [SerializeField] private Button _restartButton;
-        [SerializeField] private Button _backToStartMenuButton;
-        [SerializeField] private Button _settingsMenuButton;
-        [SerializeField] private Text _computerScoreText;
-        [SerializeField] private Text _userScoreText;
-        [SerializeField] private Text _winnerText;
-        [SerializeField] private GameObject _startMenuObject;
-        [SerializeField] private GameObject _settingsMenuObject;
-        [SerializeField] private GameObject _shipsSetPanelObject;
-        [SerializeField] private GameObject _gamePhaseObject;
-        [SerializeField] private GameObject _winnerPanelObject;
         public const int GridSize = 10;
         private readonly ElementItem[,] _userGridsCells = new ElementItem[GridSize, GridSize];
         private readonly ElementItem[,] _computerGridsCells = new ElementItem[GridSize, GridSize];
-        private List<Ship> _ships = new List<Ship>();
-        private Ship _ship;
-
+        public bool _confirm;
 
         private void Start()
         {
@@ -53,55 +50,66 @@ namespace UI
 
         private void Init()
         {
-            ToStartMenu();
+            SetPageState(PageState.StartPage);
             _dataManager = new DataManager();
             _sessionDataManager = new SessionDataManager();
             _soundManager.Init(_dataManager);
-            _settingsMenu.Init(ToStartMenu, _dataManager);
-            _userShipsSetPanel.Init(ShipsSetPanelQuit, () => SetRandomShips(_userGridsCells), _userGridsCells);
-            _startButton.onClick.RemoveAllListeners();
-            _startButton.onClick.AddListener(GameStart);
-            _settingsMenuButton.onClick.RemoveAllListeners();
-            _settingsMenuButton.onClick.AddListener(ToSettingsMenu);
-            _restartButton.onClick.RemoveAllListeners();
-            _restartButton.onClick.AddListener(Restart);
-            _backToStartMenuButton.onClick.RemoveAllListeners();
-            _backToStartMenuButton.onClick.AddListener(ToStartMenu);
+            _startPage.Init(() => SetPageState(PageState.ShipSetPage),
+                () => SetPageState(PageState.SettingsPage));
+            _gamePage.Init(Restart, () => SetPageState(PageState.StartPage), ConfirmPlace);
+            _settingsPage.Init(() => SetPageState(PageState.StartPage), _dataManager);
+            _userShipsSetPanel.Init(ShipsSetPanelQuit,
+                () => SetRandomShips(_userGridsCells), _userGridsCells);
             GridCreate(_userGridsCells, null, _userGridContainer, OwnerType.User);
-            GridCreate(_computerGridsCells, OnElementPressedForAttack, _computerGridContainer, OwnerType.Computer);
+            GridCreate(_computerGridsCells, ElementPressedForAttack, _computerGridContainer, OwnerType.Computer);
+            _shipsManager.Init(_userGridsCells, _confirm);
         }
-
-        private void GameStart()
+        
+        private void ConfirmPlace()
         {
-            _startMenuObject.SetActive(false);
-            _shipsSetPanelObject.SetActive(true);
-            _gamePhaseObject.SetActive(false);
-            _settingsMenuObject.SetActive(false);
+            _confirm = true;
         }
-
-        private void ToSettingsMenu()
+        private void SetPageState(PageState pageState)
         {
-            _startMenuObject.SetActive(false);
-            _shipsSetPanelObject.SetActive(false);
-            _gamePhaseObject.SetActive(false);
-            _settingsMenuObject.SetActive(true);
+            switch (pageState)
+            {
+                case PageState.StartPage:
+                    _startPage.gameObject.SetActive(true);
+                    _userShipsSetPanel.gameObject.SetActive(false);
+                    _gamePage.gameObject.SetActive(false);
+                    _settingsPage.gameObject.SetActive(false);
+                    break;
+                case PageState.SettingsPage:
+                    _startPage.gameObject.SetActive(false);
+                    _userShipsSetPanel.gameObject.SetActive(false);
+                    _gamePage.gameObject.SetActive(false);
+                    _settingsPage.gameObject.SetActive(true);
+                    break;
+                case PageState.GamePage:
+                    _startPage.gameObject.SetActive(false);
+                    _userShipsSetPanel.gameObject.SetActive(false);
+                    _gamePage.gameObject.SetActive(true);
+                    _settingsPage.gameObject.SetActive(false);
+                    break;
+                case PageState.ShipSetPage:
+                    _startPage.gameObject.SetActive(false);
+                    _userShipsSetPanel.gameObject.SetActive(true);
+                    _gamePage.gameObject.SetActive(false);
+                    _settingsPage.gameObject.SetActive(false);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
         }
 
         private void ShipsSetPanelQuit()
         {
-            _startMenuObject.SetActive(false);
-            _shipsSetPanelObject.SetActive(false);
-            _gamePhaseObject.SetActive(true);
-            _settingsMenuObject.SetActive(false);
+            _startPage.gameObject.SetActive(false);
+            _userShipsSetPanel.gameObject.SetActive(false);
+            _gamePage.gameObject.SetActive(true);
+            _settingsPage.gameObject.SetActive(false);
         }
 
-        private void ToStartMenu()
-        {
-            _startMenuObject.SetActive(true);
-            _shipsSetPanelObject.SetActive(false);
-            _gamePhaseObject.SetActive(false);
-            _settingsMenuObject.SetActive(false);
-        }
 
         private void Restart()
         {
@@ -114,57 +122,13 @@ namespace UI
                     _userShipsSetPanel._usersShipsCoordinates[i, j].GridElementType = GridElementType.None;
                 }
             }
-
+            _gamePage.WinnerPanelObject.SetActive(false);
             _sessionDataManager.UserHitShipsCount = 0;
             _sessionDataManager.ComputerHitShipsCount = 0;
             SetRandomShips(_computerGridsCells);
-            GameStart();
+            SetPageState(PageState.StartPage);
         }
 
-        private void CreateShip(int size, ElementItem[,] grid)
-        {
-            for (int i = 0; i < GridSize; i++)
-            {
-                for (int j = 0; j < GridSize; j++)
-                {
-                    var currentShip = Instantiate(_ship);
-                    _ship.Size = size;
-                    switch (_ship.Size)
-                    {
-                        case 1:
-                            currentShip.ShipCoordinates[0] = new Coordinates(i, j);
-                            break;
-                        case 2:
-                            currentShip.ShipCoordinates[0] = new Coordinates(i, j);
-                            currentShip.ShipCoordinates[1] = new Coordinates(i, j + 1);
-                            break;
-                        case 3:
-                            currentShip.ShipCoordinates[0] = new Coordinates(i, j);
-                            currentShip.ShipCoordinates[1] = new Coordinates(i, j + 1);
-                            currentShip.ShipCoordinates[2] = new Coordinates(i, j - 1);
-                            break;
-                        case 4:
-                            currentShip.ShipCoordinates[0] = new Coordinates(i, j);
-                            currentShip.ShipCoordinates[1] = new Coordinates(i, j + 1);
-                            currentShip.ShipCoordinates[2] = new Coordinates(i, j + 2);
-                            currentShip.ShipCoordinates[3] = new Coordinates(i, j - 1);
-                            break;
-                    }
-
-                    foreach (var coordinate in currentShip.ShipCoordinates)
-                    {
-                        if (grid.Cast<ElementItem>().Where(data => data.Coordinates 
-                                                                   == coordinate).All(data => data.GridElementType == GridElementType.None))
-                        {
-                            if (grid[coordinate.X, coordinate.Y].GridElementType == GridElementType.None)
-                            {
-                                grid[coordinate.X, coordinate.Y].GridElementType = GridElementType.Ship;
-                            }
-                        }
-                    }
-                }
-            }
-        }
 
         private void SetRandomShips(ElementItem[,] grid)
         {
@@ -179,7 +143,6 @@ namespace UI
                 }
             }
         }
-
 
         private void GridCreate(ElementItem[,] elementItems,
             Action<ElementItem> onElementPressed,
@@ -242,7 +205,7 @@ namespace UI
             }
         }
 
-        private void OnElementPressedForAttack(ElementItem elementItem)
+        private void ElementPressedForAttack(ElementItem elementItem)
         {
             while (_userGridsCells.Cast<ElementItem>().Any(data => data.GridElementType == GridElementType.Ship)
                    && _computerGridsCells.Cast<ElementItem>().Any(data => data.GridElementType == GridElementType.Ship))
@@ -269,16 +232,16 @@ namespace UI
                         return;
                 }
 
-                _userScoreText.text = "Hit: " + _sessionDataManager.UserHitShipsCount;
-                _computerScoreText.text = "Hit: " + _sessionDataManager.ComputerHitShipsCount;
+                _gamePage.UserScoreText.text = "Hit: " + _sessionDataManager.UserHitShipsCount;
+                _gamePage.ComputerScoreText.text = "Hit: " + _sessionDataManager.ComputerHitShipsCount;
             }
 
-            _winnerText.text =
+            _gamePage.WinnerText.text =
                 _computerGridsCells.Cast<ElementItem>().Any(element => element.GridElementType == GridElementType.Ship)
                     ? "You LOSE"
                     : "You WIN";
 
-            _winnerPanelObject.SetActive(true);
+            _gamePage.WinnerPanelObject.SetActive(true);
         }
     }
 }

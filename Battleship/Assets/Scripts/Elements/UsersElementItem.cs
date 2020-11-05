@@ -1,5 +1,6 @@
 ﻿using System;
 using DG.Tweening;
+using Managers;
 using UI;
 using UnityEngine;
 using UnityEngine.UI;
@@ -22,7 +23,7 @@ namespace Elements
             {
                 _gridElementTypeType = value;
 
-                // _elementSpriteChange.ChangeSprite(_gridElementTypeType);
+                _elementSpriteChange.ChangeSprite(_gridElementTypeType);
             }
             get => _gridElementTypeType;
         }
