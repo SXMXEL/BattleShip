@@ -1,4 +1,5 @@
 ﻿using System;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -6,27 +7,27 @@ namespace UI
 {
     public class GamePage : MonoBehaviour
     {
-        public Text ComputerScoreText, UserScoreText, WinnerText;
-        public GameObject WinnerPanelObject;
-        [SerializeField] private Button _restartButton, _backToStartMenuButton, _confirmShipsPositionsButton;
-        [SerializeField] private GameObject _hideGameObjects, _shipsContainer;
+        public TextMeshProUGUI ComputerScoreText, UserScoreText, WinnerText;
+        public GameObject WinnerPanelObject, HideGameObjects, ShipsContainer ;
+        public Button ConfirmShipsPositionsButton, RandomShipSetButton;
+        [SerializeField] private Button _restartButton, _backToStartMenuButton;
 
 
-        public void Init(Action OnRestartAction, Action OnSetStartPageState, Action Confirm)
+        public void Init(Action OnRestartAction, Action OnSetStartPageState)
         {
             _restartButton.onClick.RemoveAllListeners();
             _restartButton.onClick.AddListener(OnRestartAction.Invoke);
             _backToStartMenuButton.onClick.RemoveAllListeners();
             _backToStartMenuButton.onClick.AddListener(OnSetStartPageState.Invoke);
-            _confirmShipsPositionsButton.onClick.RemoveAllListeners();
-            _confirmShipsPositionsButton.onClick.AddListener(ConfirmShipsPositions);
-            _confirmShipsPositionsButton.onClick.AddListener(Confirm.Invoke);
+            ConfirmShipsPositionsButton.onClick.RemoveAllListeners();
+            ConfirmShipsPositionsButton.onClick.AddListener(ConfirmShipsPositions);
         }
 
-        private void ConfirmShipsPositions()
+        public void ConfirmShipsPositions()
         {
-            _shipsContainer.SetActive(false);
-            _hideGameObjects.SetActive(true);
+            ShipsContainer.SetActive(false);
+            HideGameObjects.SetActive(true);
         }
+        
     }
 }

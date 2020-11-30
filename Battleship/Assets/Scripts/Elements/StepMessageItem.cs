@@ -1,4 +1,5 @@
 ﻿using System;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -6,7 +7,7 @@ namespace Elements
 {
     public class StepMessageItem : MonoBehaviour
     {
-        [SerializeField] private Text _stepText;
+        [SerializeField] private TextMeshProUGUI _stepText;
     
         public void Init(StepMessageData stepMessageData)
         {
@@ -14,10 +15,10 @@ namespace Elements
             switch (stepMessageData.OwnerType)
             {
                 case OwnerType.User:
-                    _stepText.alignment = TextAnchor.MiddleLeft;
+                    _stepText.alignment = (TextAlignmentOptions) TextAnchor.MiddleLeft;
                     break;
                 case OwnerType.Computer:
-                    _stepText.alignment = TextAnchor.MiddleRight;
+                    _stepText.alignment = (TextAlignmentOptions) TextAnchor.MiddleRight;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -26,7 +27,6 @@ namespace Elements
 
         public void Dispose()
         {
-            
         }
     }
 

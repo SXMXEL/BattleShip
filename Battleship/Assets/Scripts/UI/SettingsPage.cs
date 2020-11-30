@@ -20,8 +20,11 @@ namespace UI
             _backToStartMenuButton.onClick.RemoveAllListeners();
             _backToStartMenuButton.onClick.AddListener(OnSetStartPageState.Invoke);
             _muteButton.onClick.RemoveAllListeners();
-            _muteButton.onClick.AddListener(MuteFunction);
-            _muteButton.onClick.AddListener(ChangeIcon);
+            _muteButton.onClick.AddListener(() =>
+            {
+                MuteFunction();
+                ChangeIcon();
+            });
         }
 
         private void MuteFunction()

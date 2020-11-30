@@ -1,7 +1,6 @@
 ﻿using System;
 using DG.Tweening;
 using Managers;
-using UI;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -11,16 +10,9 @@ namespace Elements
     public enum OwnerType
     {
         User,
-        Computer,
+        Computer
     }
-
-    public enum ShipType
-    {
-        Submarine,
-        Frigate,
-        Schooner,
-        Boat,
-    }
+    
 
     public class ElementItem : MonoBehaviour, IDropHandler
     {
@@ -30,14 +22,6 @@ namespace Elements
         public Coordinates Coordinates { private set; get; }
         private GridElementType _gridElementTypeType;
         private OwnerType _ownerType;
-
-        public ShipType ShipType
-        {
-            set => _shipType = value;
-            get => _shipType;
-        }
-
-        private ShipType _shipType;
 
 
         public GridElementType GridElementType
@@ -63,7 +47,7 @@ namespace Elements
                             throw new ArgumentOutOfRangeException();
                     }
                 }
-
+                
                 _elementSpriteChange.ChangeSprite(currentGridElementType);
             }
             get => _gridElementTypeType;

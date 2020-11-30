@@ -21,6 +21,10 @@ namespace Elements
             return (char)(X + 65) + " " + (Y + 1);
             
         }
-        
+
+        public bool IsSameCoordinates(Coordinates coordinates)
+        {
+            return coordinates.X == X && coordinates.Y == Y;
+        }
     }
 }

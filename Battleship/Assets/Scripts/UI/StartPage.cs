@@ -8,10 +8,10 @@ namespace UI
     {
         [SerializeField] private Button _startButton;
         [SerializeField] private Button _settingsMenuButton;
-        public void Init(Action OnSetShipSetPageState, Action OnSetSettingsPageState)
+        public void Init(Action OnSetGamePageState, Action OnSetSettingsPageState)
         {
             _startButton.onClick.RemoveAllListeners();
-            _startButton.onClick.AddListener(OnSetShipSetPageState.Invoke);
+            _startButton.onClick.AddListener(OnSetGamePageState.Invoke);
             _settingsMenuButton.onClick.RemoveAllListeners();
             _settingsMenuButton.onClick.AddListener(OnSetSettingsPageState.Invoke);
         }
