@@ -15,10 +15,10 @@ namespace Elements
             switch (stepMessageData.OwnerType)
             {
                 case OwnerType.User:
-                    _stepText.alignment = (TextAlignmentOptions) TextAnchor.MiddleLeft;
+                    _stepText.alignment = TextAlignmentOptions.MidlineLeft;
                     break;
                 case OwnerType.Computer:
-                    _stepText.alignment = (TextAlignmentOptions) TextAnchor.MiddleRight;
+                    _stepText.alignment = TextAlignmentOptions.MidlineRight;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();

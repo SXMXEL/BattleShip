@@ -14,20 +14,21 @@ namespace Managers
     {
         public Ship[] UserShips;
         public Ship[] ComputerShips;
-
         private ElementItem[,] _userGrid;
         private GamePage _gamePage;
+        private SoundManager _soundManager;
 
 
-        public void Init(ElementItem[,] userGrid, ElementItem[,] computerGrid, GamePage gamePage, int gridSize)
+        public void Init(ElementItem[,] userGrid, ElementItem[,] computerGrid, GamePage gamePage,
+            int gridSize, SoundManager soundManager)
         {
             _userGrid = userGrid;
             _gamePage = gamePage;
+            _soundManager = soundManager;
             foreach (var ship in UserShips)
             {
                 ship.Init(userGrid, ShipDragOnGrid);
             }
-
 
             _gamePage.RandomShipSetButton.onClick.RemoveAllListeners();
             _gamePage.RandomShipSetButton.onClick.AddListener(() =>
@@ -68,6 +69,7 @@ namespace Managers
             {
                 elementItem.GridElementType = GridElementType.None;
             }
+
             var gridCoordinatesList =
                 (from ElementItem elementItem in grid select elementItem.Coordinates).ToList();
             for (int i = 0; i < 3; i++)
@@ -88,17 +90,15 @@ namespace Managers
                     break;
                 }
             }
-            
-            
+
             foreach (var ship in ships)
             {
                 while (true)
                 {
-                    ship.ShipRectTransform.position = ship.DefaultPosition;
                     var randomRow = Random.Range(0, gridSize);
                     var randomColumn = Random.Range(0, gridSize);
                     var randomCoordinate = new Coordinates(randomRow, randomColumn);
-                    var shipCoordinatesList 
+                    var shipCoordinatesList
                         = GetShipCoordinates(ship.ShipType, randomCoordinate, ship.IsVertical);
                     var shipItemList = new List<ElementItem>();
                     var validShipCoordinatesList = shipCoordinatesList.Where(shipCoordinate
@@ -243,6 +243,7 @@ namespace Managers
 
                     ship.ShipRectTransform.position = centerOfVectors;
                     ship.IsSet = true;
+                    _soundManager.PlaySfx(SfxType.ShipPlaceSound);
                     TryToActivateConfirmButton();
                 }
                 else

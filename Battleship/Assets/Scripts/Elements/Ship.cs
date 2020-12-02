@@ -74,7 +74,7 @@ namespace Elements
 
         
 
-        protected override void OnItemBeginDrag(PointerEventData eventData)
+        protected override void OnItemBeginDrag()
         {
             if (ShipItems != null &&
                 ShipItems.All(data => data.GridElementType == GridElementType.Ship))
@@ -86,7 +86,7 @@ namespace Elements
             }
         }
 
-        protected override void OnItemDrag(PointerEventData eventData)
+        protected override void OnItemDrag()
         {
             Debug.Log("Item is dragging");
         }
@@ -96,7 +96,7 @@ namespace Elements
             _onShipDragOnGrid.Invoke(GetNearestElement(eventData.position).Coordinates, this);
         }
 
-        protected override void OnPointerDownOnItem(PointerEventData eventData)
+        protected override void OnPointerDownOnItem()
         {
             if (!_isTouched)
             {

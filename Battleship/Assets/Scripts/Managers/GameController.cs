@@ -58,7 +58,7 @@ namespace Managers
                 () => SetPageState(PageState.SettingsPage));
             _gamePage.Init(Restart, () => SetPageState(PageState.StartPage));
             _settingsPage.Init(() => SetPageState(PageState.StartPage), _dataManager);
-            _shipsManager.Init(_userGridsCells, _computerGridsCells, _gamePage, _gridSize);
+            _shipsManager.Init(_userGridsCells, _computerGridsCells, _gamePage, _gridSize, _soundManager);
         }
 
         private void SetPageState(PageState pageState)
@@ -68,10 +68,10 @@ namespace Managers
             _gamePage.gameObject.SetActive(pageState == PageState.GamePage);
         }
 
-
+        
+        
         private void Restart()
         {
-            
             for (int i = 0; i < _gridSize; i++)
             {
                 for (int j = 0; j < _gridSize; j++)
@@ -81,26 +81,38 @@ namespace Managers
                 }
             }
 
+            foreach (var item in _messageItemsController.StepMessageItems)
+            {
+                item.gameObject.SetActive(false);
+                item.Dispose();
+            }
+
             FreshStart();
             ResetShips(_shipsManager.UserShips);
             ResetShips(_shipsManager.ComputerShips);
             _sessionDataManager.UserHitShipsCount = 0;
             _sessionDataManager.ComputerHitShipsCount = 0;
             _gamePage.ConfirmShipsPositionsButton.interactable = false;
-
-            // SetRandomShips(_computerGridsCells); "And this "
             SetPageState(PageState.GamePage);
         }
 
-        private void ResetShips(Ship[] ships)
+        private static void ResetShips(Ship[] ships)
         {
             foreach (var ship in ships)
             {
-                ship.ShipRectTransform.position = ship.DefaultPosition;
                 ship.IsVertical = false;
                 ship.CantDrag = false;
+                ship.IsSet = false;
+                if (ship.OwnerType == OwnerType.User)
+                {
+                    ship.ShipRectTransform.position = ship.DefaultPosition;
+                }
+                else
+                {
+                    ship.gameObject.SetActive(false);
+                }
                 ship.ShipRectTransform.DORotate(new Vector3(0, 0, 0), 1);
-            }  
+            }
         }
 
         private void FreshStart()
@@ -109,21 +121,7 @@ namespace Managers
             _gamePage.HideGameObjects.SetActive(false);
             _gamePage.ShipsContainer.SetActive(true);
         }
-
-
-        // private void SetRandomShips(ElementItem[,] grid)
-        // {
-        //     while (grid.Cast<ElementItem>().Where(data => data.GridElementType == GridElementType.Ship).ToList().Count
-        //            < _gridSize * _gridSize * 0.2f)
-        //     {
-        //         var randRow = Random.Range(0, _gridSize);
-        //         var randColumn = Random.Range(0, _gridSize);
-        //         if (grid[randRow, randColumn].GridElementType == GridElementType.None)
-        //         {
-        //             grid[randRow, randColumn].GridElementType = GridElementType.Ship;
-        //         }
-        //     }
-        // } TODO " Remove this"
+        
 
         private void GridCreate(ElementItem[,] elementItems,
             Action<ElementItem> onElementPressed,
@@ -143,16 +141,12 @@ namespace Managers
                     elementItems[i, j] = elementItem;
                 }
             }
-
-            // if (elementItems == _computerGridsCells)
-            // {
-            //     SetRandomShips(_computerGridsCells);
-            // }
         }
 
         private void ComputerAttack()
         {
-            while (_computerGridsCells.Cast<ElementItem>().Any(data => data.GridElementType == GridElementType.Ship))
+            while (_computerGridsCells.Cast<ElementItem>().Any(item 
+                => item.GridElementType == GridElementType.Ship))
             {
                 var randRow = Random.Range(0, _gridSize);
                 var randColumn = Random.Range(0, _gridSize);
@@ -186,8 +180,10 @@ namespace Managers
 
         private void ElementPressedForAttack(ElementItem elementItem)
         {
-            while (_userGridsCells.Cast<ElementItem>().Any(data => data.GridElementType == GridElementType.Ship)
-                   && _computerGridsCells.Cast<ElementItem>().Any(data => data.GridElementType == GridElementType.Ship))
+            while (_userGridsCells.Cast<ElementItem>().Any(item
+                       => item.GridElementType == GridElementType.Ship)
+                   && _computerGridsCells.Cast<ElementItem>().Any(item 
+                       => item.GridElementType == GridElementType.Ship))
             {
                 switch (elementItem.GridElementType)
                 {
@@ -211,16 +207,28 @@ namespace Managers
                         return;
                 }
 
+                TryActivateShip(_shipsManager.ComputerShips);
+
                 _gamePage.UserScoreText.text = "Hit: " + _sessionDataManager.UserHitShipsCount;
                 _gamePage.ComputerScoreText.text = "Hit: " + _sessionDataManager.ComputerHitShipsCount;
             }
 
             _gamePage.WinnerText.text =
-                _computerGridsCells.Cast<ElementItem>().Any(element => element.GridElementType == GridElementType.Ship)
+                _computerGridsCells.Cast<ElementItem>().Any(item 
+                    => item.GridElementType == GridElementType.Ship)
                     ? "You LOSE"
                     : "You WIN";
 
             _gamePage.WinnerPanelObject.SetActive(true);
+        }
+
+        private static void TryActivateShip(Ship[] ships)
+        {
+            foreach (var ship in ships)
+            {
+                ship.gameObject.SetActive(ship.ShipItems.All(item =>
+                    item.GridElementType == GridElementType.DestroyedShip));
+            }
         }
     }
 }

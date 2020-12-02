@@ -11,15 +11,16 @@ namespace Pool
 {
     public class MessageItemsController : MonoBehaviour
     {
-        [SerializeField] private ScrollRect _scrollView;
+        [SerializeField] private ScrollRect _scrollRect;
         [SerializeField] private GameObject _scrollContent;
         [SerializeField] private MessageItemFactory _messageItemFactory;
-        private List<StepMessageItem> _stepMessageItems = new List<StepMessageItem>();
+        public List<StepMessageItem> StepMessageItems = new List<StepMessageItem>();
 
         public void LogGenerate(ElementItem gridElement, OwnerType ownerType)
         {
             GenerateItem(new StepMessageData(GetMessageText(gridElement), ownerType));
-            _scrollView.verticalNormalizedPosition = 0;
+            _scrollRect.verticalNormalizedPosition = -0.2f;
+            
         }
 
         private void GenerateItem(StepMessageData stepMessageData)
@@ -27,11 +28,11 @@ namespace Pool
             var messageItem = _messageItemFactory.GetItem();
             messageItem.transform.SetParent(_scrollContent.transform);
             messageItem.Init(stepMessageData);
-            _stepMessageItems.Add(messageItem);
-            if (_stepMessageItems.Count > 20)
+            StepMessageItems.Add(messageItem);
+            if (StepMessageItems.Count > 20)
             {
-                var firstItem = _stepMessageItems.First();
-                _stepMessageItems.Remove(firstItem);
+                var firstItem = StepMessageItems.First();
+                StepMessageItems.Remove(firstItem);
                 _messageItemFactory.ReturnItem(firstItem);
             }
         }

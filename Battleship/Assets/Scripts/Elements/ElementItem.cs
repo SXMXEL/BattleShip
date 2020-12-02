@@ -12,7 +12,7 @@ namespace Elements
         User,
         Computer
     }
-    
+
 
     public class ElementItem : MonoBehaviour, IDropHandler
     {
@@ -30,24 +30,23 @@ namespace Elements
             {
                 _gridElementTypeType = value;
                 var currentGridElementType = _gridElementTypeType;
-                if (_ownerType == OwnerType.Computer)
+
+                switch (currentGridElementType)
                 {
-                    switch (currentGridElementType)
-                    {
-                        case GridElementType.None:
-                            break;
-                        case GridElementType.Ship:
-                            currentGridElementType = GridElementType.None;
-                            break;
-                        case GridElementType.DestroyedShip:
-                            break;
-                        case GridElementType.Miss:
-                            break;
-                        default:
-                            throw new ArgumentOutOfRangeException();
-                    }
+                    case GridElementType.None:
+                        break;
+                    case GridElementType.Ship:
+                        currentGridElementType = GridElementType.None;
+                        break;
+                    case GridElementType.DestroyedShip:
+                        break;
+                    case GridElementType.Miss:
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
                 }
-                
+
+
                 _elementSpriteChange.ChangeSprite(currentGridElementType);
             }
             get => _gridElementTypeType;

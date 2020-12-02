@@ -25,7 +25,7 @@ namespace DragDrop
                 Debug.Log("OnEndDrag");
                 _canvasGroup.alpha = .6f;
                 _canvasGroup.blocksRaycasts = false;
-                OnItemBeginDrag(eventData);
+                OnItemBeginDrag();
             }
             else
             {
@@ -33,14 +33,14 @@ namespace DragDrop
             }
         }
 
-        protected abstract void OnItemBeginDrag(PointerEventData eventData);
+        protected abstract void OnItemBeginDrag();
 
         public void OnDrag(PointerEventData eventData)
         {
             if (!CantDrag)
             {
                 _rectTransform.anchoredPosition += eventData.delta / _canvas.scaleFactor;
-                OnItemDrag(eventData);
+                OnItemDrag();
             }
             else
             {
@@ -48,7 +48,7 @@ namespace DragDrop
             }
         }
 
-        protected abstract void OnItemDrag(PointerEventData eventData);
+        protected abstract void OnItemDrag();
 
         public void OnEndDrag(PointerEventData eventData)
         {
@@ -71,7 +71,7 @@ namespace DragDrop
         {
             if (!CantDrag)
             {
-                OnPointerDownOnItem(eventData);
+                OnPointerDownOnItem();
             }
             else
             {
@@ -79,6 +79,6 @@ namespace DragDrop
             }
         }
 
-        protected abstract void OnPointerDownOnItem(PointerEventData eventData);
+        protected abstract void OnPointerDownOnItem();
     }
 }
