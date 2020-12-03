@@ -55,7 +55,7 @@ namespace Managers
             }
         }
 
-        private void DragBlock(Ship[] ships)
+        private static void DragBlock(Ship[] ships)
         {
             foreach (Ship ship in ships)
             {

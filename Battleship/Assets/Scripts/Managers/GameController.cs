@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Linq;
 using DG.Tweening;
 using Elements;
@@ -16,6 +17,15 @@ namespace Managers
         GamePage
     }
 
+    public enum BattleState
+    {
+        Start,
+        PlayerTurn,
+        ComputerTurn,
+        Win,
+        Lose
+    }
+
     public enum GridElementType
     {
         None,
@@ -26,6 +36,7 @@ namespace Managers
 
     public class GameController : MonoBehaviour
     {
+        public BattleState State;
         private DataManager _dataManager;
         private SessionDataManager _sessionDataManager;
         [SerializeField] private SoundManager _soundManager;
@@ -47,6 +58,7 @@ namespace Managers
 
         private void Init()
         {
+            State = BattleState.Start;
             SetPageState(PageState.StartPage);
             FreshStart();
             _dataManager = new DataManager();
@@ -68,8 +80,7 @@ namespace Managers
             _gamePage.gameObject.SetActive(pageState == PageState.GamePage);
         }
 
-        
-        
+
         private void Restart()
         {
             for (int i = 0; i < _gridSize; i++)
@@ -87,6 +98,7 @@ namespace Managers
                 item.Dispose();
             }
 
+            State = BattleState.Start;
             FreshStart();
             ResetShips(_shipsManager.UserShips);
             ResetShips(_shipsManager.ComputerShips);
@@ -111,6 +123,7 @@ namespace Managers
                 {
                     ship.gameObject.SetActive(false);
                 }
+
                 ship.ShipRectTransform.DORotate(new Vector3(0, 0, 0), 1);
             }
         }
@@ -121,7 +134,7 @@ namespace Managers
             _gamePage.HideGameObjects.SetActive(false);
             _gamePage.ShipsContainer.SetActive(true);
         }
-        
+
 
         private void GridCreate(ElementItem[,] elementItems,
             Action<ElementItem> onElementPressed,
@@ -143,31 +156,62 @@ namespace Managers
             }
         }
 
-        private void ComputerAttack()
+        private IEnumerator ComputerAttack()
         {
-            while (_computerGridsCells.Cast<ElementItem>().Any(item 
+            while (_computerGridsCells.Cast<ElementItem>().Any(item
                 => item.GridElementType == GridElementType.Ship))
             {
                 var randRow = Random.Range(0, _gridSize);
                 var randColumn = Random.Range(0, _gridSize);
                 var currentElementItem = _userGridsCells[randRow, randColumn];
+                var x = currentElementItem.Coordinates.X;
+                var y = currentElementItem.Coordinates.Y;
                 switch (currentElementItem.GridElementType)
                 {
                     case GridElementType.None:
                         currentElementItem.GridElementType = GridElementType.Miss;
                         _soundManager.PlaySfx(SfxType.Miss);
                         _messageItemsController.LogGenerate(
-                            _userGridsCells[currentElementItem.Coordinates.X, currentElementItem.Coordinates.Y],
+                            _userGridsCells[x, y],
                             OwnerType.Computer);
-                        return;
+                        yield break;
                     case GridElementType.Ship:
                         currentElementItem.GridElementType = GridElementType.DestroyedShip;
                         _soundManager.PlaySfx(SfxType.Explosion);
                         _messageItemsController.LogGenerate(
-                            _userGridsCells[currentElementItem.Coordinates.X, currentElementItem.Coordinates.Y],
+                            _userGridsCells[x, y],
                             OwnerType.Computer);
                         _sessionDataManager.ComputerHitShipsCount++;
-                        break;
+                        yield return new WaitForSeconds(1.5f);
+                        for (int i = 1; i < 4; i++)
+                        {
+                            yield return new WaitForSeconds(1);
+                            var targetItem = _userGridsCells[x, y + i];
+                            switch (targetItem.GridElementType)
+                            {
+                                case GridElementType.None:
+                                    targetItem.GridElementType = GridElementType.Miss;
+                                    _soundManager.PlaySfx(SfxType.Miss);
+                                    _messageItemsController.LogGenerate(
+                                        _userGridsCells[x, y],
+                                        OwnerType.Computer);
+                                    yield break;
+                                case GridElementType.Ship:
+                                    targetItem.GridElementType = GridElementType.DestroyedShip;
+                                    _soundManager.PlaySfx(SfxType.Explosion);
+                                    _messageItemsController.LogGenerate(
+                                        _userGridsCells[x, y],
+                                        OwnerType.Computer);
+                                    _sessionDataManager.ComputerHitShipsCount++;
+                                    break;
+                                case GridElementType.DestroyedShip:
+                                case GridElementType.Miss:
+                                    yield break;
+                                default:
+                                    throw new ArgumentOutOfRangeException();
+                            }
+                        }
+                        yield break;
                     case GridElementType.DestroyedShip:
                         break;
                     case GridElementType.Miss:
@@ -177,12 +221,13 @@ namespace Managers
                 }
             }
         }
+        
 
         private void ElementPressedForAttack(ElementItem elementItem)
         {
             while (_userGridsCells.Cast<ElementItem>().Any(item
                        => item.GridElementType == GridElementType.Ship)
-                   && _computerGridsCells.Cast<ElementItem>().Any(item 
+                   && _computerGridsCells.Cast<ElementItem>().Any(item
                        => item.GridElementType == GridElementType.Ship))
             {
                 switch (elementItem.GridElementType)
@@ -192,7 +237,7 @@ namespace Managers
                         _soundManager.PlaySfx(SfxType.Miss);
                         _messageItemsController.LogGenerate(
                             _computerGridsCells[elementItem.Coordinates.X, elementItem.Coordinates.Y], OwnerType.User);
-                        ComputerAttack();
+                        StartCoroutine(ComputerAttack());
                         break;
                     case GridElementType.Ship:
                         elementItem.GridElementType = GridElementType.DestroyedShip;
@@ -202,7 +247,6 @@ namespace Managers
                         _sessionDataManager.UserHitShipsCount++;
                         break;
                     case GridElementType.DestroyedShip:
-                        return;
                     case GridElementType.Miss:
                         return;
                 }
@@ -214,7 +258,7 @@ namespace Managers
             }
 
             _gamePage.WinnerText.text =
-                _computerGridsCells.Cast<ElementItem>().Any(item 
+                _computerGridsCells.Cast<ElementItem>().Any(item
                     => item.GridElementType == GridElementType.Ship)
                     ? "You LOSE"
                     : "You WIN";
