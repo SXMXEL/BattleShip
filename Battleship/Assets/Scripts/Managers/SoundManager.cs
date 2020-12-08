@@ -31,7 +31,7 @@ namespace Managers
                 _audio.PlayDelayed(_delayTime);
             }
 
-            if (_dataManager.UserData.IsMuted == true)
+            if (_dataManager.UserData.IsMuted)
             {
                 Debug.Log("Mute on");
             }

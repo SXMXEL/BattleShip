@@ -7,9 +7,9 @@ namespace UI
 {
     public class GamePage : MonoBehaviour
     {
-        public TextMeshProUGUI ComputerScoreText, UserScoreText, WinnerText;
-        public GameObject WinnerPanelObject, HideGameObjects, ShipsContainer ;
-        public Button ConfirmShipsPositionsButton, RandomShipSetButton;
+        public TextMeshProUGUI ComputerScore, UserScore, WinnerText;
+        public GameObject AttackBlock, WinnerPanel, HideGameObjects, ShipsContainer ;
+        public Button Confirm, Random;
         [SerializeField] private Button _restartButton, _backToStartMenuButton;
 
 
@@ -19,8 +19,8 @@ namespace UI
             _restartButton.onClick.AddListener(OnRestartAction.Invoke);
             _backToStartMenuButton.onClick.RemoveAllListeners();
             _backToStartMenuButton.onClick.AddListener(OnSetStartPageState.Invoke);
-            ConfirmShipsPositionsButton.onClick.RemoveAllListeners();
-            ConfirmShipsPositionsButton.onClick.AddListener(ConfirmShipsPositions);
+            Confirm.onClick.RemoveAllListeners();
+            Confirm.onClick.AddListener(ConfirmShipsPositions);
         }
 
         public void ConfirmShipsPositions()
@@ -28,6 +28,8 @@ namespace UI
             ShipsContainer.SetActive(false);
             HideGameObjects.SetActive(true);
         }
+
         
+
     }
 }

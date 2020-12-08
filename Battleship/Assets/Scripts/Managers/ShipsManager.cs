@@ -17,6 +17,7 @@ namespace Managers
         private ElementItem[,] _userGrid;
         private GamePage _gamePage;
         private SoundManager _soundManager;
+        
 
 
         public void Init(ElementItem[,] userGrid, ElementItem[,] computerGrid, GamePage gamePage,
@@ -30,14 +31,14 @@ namespace Managers
                 ship.Init(userGrid, ShipDragOnGrid);
             }
 
-            _gamePage.RandomShipSetButton.onClick.RemoveAllListeners();
-            _gamePage.RandomShipSetButton.onClick.AddListener(() =>
+            _gamePage.Random.onClick.RemoveAllListeners();
+            _gamePage.Random.onClick.AddListener(() =>
             {
                 SetRandomShips(gridSize, ComputerShips, computerGrid);
                 SetRandomShips(gridSize, UserShips, _userGrid);
                 _gamePage.ConfirmShipsPositions();
             });
-            _gamePage.ConfirmShipsPositionsButton.onClick.AddListener(
+            _gamePage.Confirm.onClick.AddListener(
                 () => SetRandomShips(gridSize, ComputerShips, computerGrid));
             TryToActivateConfirmButton();
         }
@@ -46,12 +47,12 @@ namespace Managers
         {
             if (UserShips.All(ship => ship.IsSet))
             {
-                _gamePage.ConfirmShipsPositionsButton.interactable = true;
-                _gamePage.ConfirmShipsPositionsButton.onClick.AddListener(() => DragBlock(UserShips));
+                _gamePage.Confirm.interactable = true;
+                _gamePage.Confirm.onClick.AddListener(() => DragBlock(UserShips));
             }
             else
             {
-                _gamePage.ConfirmShipsPositionsButton.interactable = false;
+                _gamePage.Confirm.interactable = false;
             }
         }
 
@@ -98,8 +99,9 @@ namespace Managers
                     var randomRow = Random.Range(0, gridSize);
                     var randomColumn = Random.Range(0, gridSize);
                     var randomCoordinate = new Coordinates(randomRow, randomColumn);
+                    var coordinates = GetShipCoordinates(ship.ShipType, randomCoordinate, ship.IsVertical);
                     var shipCoordinatesList
-                        = GetShipCoordinates(ship.ShipType, randomCoordinate, ship.IsVertical);
+                        = coordinates.Item1;
                     var shipItemList = new List<ElementItem>();
                     var validShipCoordinatesList = shipCoordinatesList.Where(shipCoordinate
                         => gridCoordinatesList.Any(data
@@ -146,11 +148,12 @@ namespace Managers
         }
 
 
-        private IEnumerable<Coordinates> GetShipCoordinates(ShipType shipType, Coordinates targetCoordinates,
+        private Tuple<List<Coordinates>, List<Coordinates>> GetShipCoordinates(ShipType shipType, Coordinates targetCoordinates,
             bool isVertical)
         {
             int length;
             var coordinates = new List<Coordinates>();
+            var accessZone = new List<Coordinates>();
             switch (shipType)
             {
                 case ShipType.Submarine:
@@ -177,6 +180,15 @@ namespace Managers
                     for (var i = 0; i < length; i++)
                     {
                         coordinates.Add(new Coordinates(targetCoordinates.X, targetCoordinates.Y + i));
+                        accessZone.Add(new Coordinates(targetCoordinates.X - 1, targetCoordinates.Y + i));
+                        accessZone.Add(new Coordinates(targetCoordinates.X + 1, targetCoordinates.Y + i));
+                        
+                    }
+
+                    for (int i = -1; i < 2; i++)
+                    {
+                        accessZone.Add(new Coordinates(targetCoordinates.X + i, targetCoordinates.Y - 1));
+                        accessZone.Add(new Coordinates(targetCoordinates.X + i, targetCoordinates.Y + length));
                     }
                 }
                 else
@@ -184,12 +196,16 @@ namespace Managers
                     targetCoordinates = new Coordinates(targetCoordinates.X - 1, targetCoordinates.Y);
                     for (var i = 0; i < length; i++)
                     {
-                        var newCoordinates = new Coordinates(targetCoordinates.X + i, targetCoordinates.Y);
-                        if (!coordinates.Contains(newCoordinates))
-                        {
-                            coordinates.Add(newCoordinates);
-                            Debug.Log(newCoordinates);
-                        }
+                        coordinates.Add(new Coordinates(targetCoordinates.X + i, targetCoordinates.Y));
+                        
+                        accessZone.Add(new Coordinates(targetCoordinates.X + i, targetCoordinates.Y - 1));
+                        accessZone.Add(new Coordinates(targetCoordinates.X + i, targetCoordinates.Y + 1));
+                    }
+                    
+                    for (int i = -1; i < 2; i++)
+                    {
+                        accessZone.Add(new Coordinates(targetCoordinates.X - 1, targetCoordinates.Y + i));
+                        accessZone.Add(new Coordinates(targetCoordinates.X + length, targetCoordinates.Y + i));
                     }
                 }
             }
@@ -198,38 +214,50 @@ namespace Managers
                 coordinates.Add(targetCoordinates);
             }
 
-            return coordinates;
+            return new Tuple<List<Coordinates>, List<Coordinates>>(coordinates, accessZone);
         }
 
-        private List<Coordinates> GetShipItemList(ElementItem[,] grid, ShipType shipType,
+        private Tuple<List<Coordinates>, List<Coordinates>> GetShipItemList(ElementItem[,] grid, ShipType shipType,
             Coordinates mainShipItemCoordinates, bool isVertical)
         {
-            var gridCoordinatesList = (from ElementItem elementItem in grid select elementItem.Coordinates).ToList();
-            var shipCoordinatesList
-                = GetShipCoordinates(shipType, mainShipItemCoordinates, isVertical);
-
-            return shipCoordinatesList.Where(shipCoordinate
-                => gridCoordinatesList.Any(data
+            var coordinates = GetShipCoordinates(shipType, mainShipItemCoordinates, isVertical);
+            var gridCoordinates = 
+                (from ElementItem elementItem in grid select elementItem.Coordinates).ToList();
+            var shipCoordinates = coordinates.Item1;
+            var validShipCoordinates = shipCoordinates.Where(shipCoordinate
+                => gridCoordinates.Any(data
                     => data.X == shipCoordinate.X && data.Y == shipCoordinate.Y)).ToList();
+            return new Tuple<List<Coordinates>, List<Coordinates>>(validShipCoordinates, coordinates.Item2);
         }
 
         private void ShipDragOnGrid(Coordinates nearestItemCoordinates, Ship ship)
         {
             if (ship.OwnerType != OwnerType.User) return;
-            var validShipCoordinatesList =
+            var coordinates = 
                 GetShipItemList(_userGrid, ship.ShipType, nearestItemCoordinates, ship.IsVertical);
-            var shipItemsList = new List<ElementItem>();
-            if (validShipCoordinatesList.Count == ship.ElementsPositions.Length)
+            var gridCoordinates = 
+                (from ElementItem elementItem in _userGrid select elementItem.Coordinates).ToList();
+            var validShipCoordinates =
+                coordinates.Item1;
+            var shipItems = new List<ElementItem>();
+            if (validShipCoordinates.Count == ship.ElementsPositions.Length)
             {
+
+                var accessCoordinates = coordinates.Item2.Where(shipCoordinate
+                    => gridCoordinates.Any(data
+                        => data.X == shipCoordinate.X && data.Y == shipCoordinate.Y)).ToList();
+                var accessItems = accessCoordinates.Select(t => _userGrid[t.X, t.Y]).ToArray();
+
                 for (var i = 0; i < ship.ElementsPositions.Length; i++)
                 {
-                    shipItemsList.Add(_userGrid[validShipCoordinatesList[i].X,
-                        validShipCoordinatesList[i].Y]);
+                    shipItems.Add(_userGrid[validShipCoordinates[i].X,
+                        validShipCoordinates[i].Y]);
                 }
 
-                Debug.Log(shipItemsList.First());
-                ship.ShipItems = shipItemsList.ToArray();
-                if (ship.ShipItems.All(data => data.GridElementType == GridElementType.None))
+                Debug.Log(shipItems.First());
+                ship.ShipItems = shipItems.ToArray();
+                if (ship.ShipItems.All(data => data.GridElementType == GridElementType.None)
+                && accessItems.All(item => item.GridElementType == GridElementType.None))
                 {
                     ship.ElementsPositions =
                         (from ElementItem elementItem in ship.ShipItems select elementItem.transform.position)

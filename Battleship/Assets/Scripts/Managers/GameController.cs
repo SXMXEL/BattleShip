@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using DG.Tweening;
 using Elements;
@@ -17,15 +18,6 @@ namespace Managers
         GamePage
     }
 
-    public enum BattleState
-    {
-        Start,
-        PlayerTurn,
-        ComputerTurn,
-        Win,
-        Lose
-    }
-
     public enum GridElementType
     {
         None,
@@ -36,7 +28,6 @@ namespace Managers
 
     public class GameController : MonoBehaviour
     {
-        public BattleState State;
         private DataManager _dataManager;
         private SessionDataManager _sessionDataManager;
         [SerializeField] private SoundManager _soundManager;
@@ -50,6 +41,8 @@ namespace Managers
         private const int _gridSize = 10;
         private readonly ElementItem[,] _userGridsCells = new ElementItem[_gridSize, _gridSize];
         private readonly ElementItem[,] _computerGridsCells = new ElementItem[_gridSize, _gridSize];
+        private List<Coordinates> _possibleShipCoordinates = new List<Coordinates>();
+
 
         private void Start()
         {
@@ -58,7 +51,6 @@ namespace Managers
 
         private void Init()
         {
-            State = BattleState.Start;
             SetPageState(PageState.StartPage);
             FreshStart();
             _dataManager = new DataManager();
@@ -97,14 +89,14 @@ namespace Managers
                 item.gameObject.SetActive(false);
                 item.Dispose();
             }
-
-            State = BattleState.Start;
+            
             FreshStart();
+            AttackBlocker(false);
             ResetShips(_shipsManager.UserShips);
             ResetShips(_shipsManager.ComputerShips);
             _sessionDataManager.UserHitShipsCount = 0;
             _sessionDataManager.ComputerHitShipsCount = 0;
-            _gamePage.ConfirmShipsPositionsButton.interactable = false;
+            _gamePage.Confirm.interactable = false;
             SetPageState(PageState.GamePage);
         }
 
@@ -130,7 +122,7 @@ namespace Managers
 
         private void FreshStart()
         {
-            _gamePage.WinnerPanelObject.SetActive(false);
+            _gamePage.WinnerPanel.SetActive(false);
             _gamePage.HideGameObjects.SetActive(false);
             _gamePage.ShipsContainer.SetActive(true);
         }
@@ -156,71 +148,147 @@ namespace Managers
             }
         }
 
+        private void AttackBlocker(bool block)
+        {
+            _gamePage.AttackBlock.SetActive(block);
+        }
+
         private IEnumerator ComputerAttack()
         {
+            AttackBlocker(true);
+            var gridCoordinates = (from ElementItem item in _userGridsCells
+                select item.Coordinates).ToList();
             while (_computerGridsCells.Cast<ElementItem>().Any(item
                 => item.GridElementType == GridElementType.Ship))
             {
                 var randRow = Random.Range(0, _gridSize);
                 var randColumn = Random.Range(0, _gridSize);
                 var currentElementItem = _userGridsCells[randRow, randColumn];
-                var x = currentElementItem.Coordinates.X;
-                var y = currentElementItem.Coordinates.Y;
-                switch (currentElementItem.GridElementType)
+                if (!_possibleShipCoordinates.Any())
                 {
-                    case GridElementType.None:
-                        currentElementItem.GridElementType = GridElementType.Miss;
-                        _soundManager.PlaySfx(SfxType.Miss);
-                        _messageItemsController.LogGenerate(
-                            _userGridsCells[x, y],
-                            OwnerType.Computer);
-                        yield break;
-                    case GridElementType.Ship:
-                        currentElementItem.GridElementType = GridElementType.DestroyedShip;
-                        _soundManager.PlaySfx(SfxType.Explosion);
-                        _messageItemsController.LogGenerate(
-                            _userGridsCells[x, y],
-                            OwnerType.Computer);
-                        _sessionDataManager.ComputerHitShipsCount++;
-                        yield return new WaitForSeconds(1.5f);
-                        for (int i = 1; i < 4; i++)
-                        {
-                            yield return new WaitForSeconds(1);
-                            var targetItem = _userGridsCells[x, y + i];
-                            switch (targetItem.GridElementType)
+                    switch (currentElementItem.GridElementType)
+                    {
+                        case GridElementType.None:
+                            currentElementItem.GridElementType = GridElementType.Miss;
+                            _soundManager.PlaySfx(SfxType.Miss);
+                            _messageItemsController.LogGenerate(
+                                _userGridsCells[randRow, randColumn],
+                                OwnerType.Computer);
+                            AttackBlocker(false);
+                            yield break;
+                        case GridElementType.Ship:
+                            currentElementItem.GridElementType = GridElementType.DestroyedShip;
+                            _soundManager.PlaySfx(SfxType.Explosion);
+                            _messageItemsController.LogGenerate(
+                                _userGridsCells[randRow, randColumn],
+                                OwnerType.Computer);
+                            _sessionDataManager.ComputerHitShipsCount++;
+                            _possibleShipCoordinates = PossibleShipCoordinates(currentElementItem.Coordinates,
+                                gridCoordinates);
+                            while (_possibleShipCoordinates.Any())
                             {
-                                case GridElementType.None:
-                                    targetItem.GridElementType = GridElementType.Miss;
-                                    _soundManager.PlaySfx(SfxType.Miss);
-                                    _messageItemsController.LogGenerate(
-                                        _userGridsCells[x, y],
-                                        OwnerType.Computer);
-                                    yield break;
-                                case GridElementType.Ship:
-                                    targetItem.GridElementType = GridElementType.DestroyedShip;
-                                    _soundManager.PlaySfx(SfxType.Explosion);
-                                    _messageItemsController.LogGenerate(
-                                        _userGridsCells[x, y],
-                                        OwnerType.Computer);
-                                    _sessionDataManager.ComputerHitShipsCount++;
-                                    break;
-                                case GridElementType.DestroyedShip:
-                                case GridElementType.Miss:
-                                    yield break;
-                                default:
-                                    throw new ArgumentOutOfRangeException();
+                                yield return new WaitForSeconds(1);
+                                int index = Random.Range(0, _possibleShipCoordinates.Count);
+                                var x = _possibleShipCoordinates[index].X;
+                                var y = _possibleShipCoordinates[index].Y;
+                                var possibleItem = _userGridsCells[x, y];
+                                switch (possibleItem.GridElementType)
+                                {
+                                    case GridElementType.None:
+                                        possibleItem.GridElementType = GridElementType.Miss;
+                                        _soundManager.PlaySfx(SfxType.Miss);
+                                        _messageItemsController.LogGenerate(
+                                            _userGridsCells[x, y],
+                                            OwnerType.Computer);
+                                        _possibleShipCoordinates.Remove(_possibleShipCoordinates[index]);
+                                        AttackBlocker(false);
+                                        yield break;
+                                    case GridElementType.Ship:
+                                        possibleItem.GridElementType = GridElementType.DestroyedShip;
+                                        _soundManager.PlaySfx(SfxType.Explosion);
+                                        _messageItemsController.LogGenerate(
+                                            _userGridsCells[x, y],
+                                            OwnerType.Computer);
+                                        _sessionDataManager.ComputerHitShipsCount++;
+                                        _possibleShipCoordinates = PossibleShipCoordinates(possibleItem.Coordinates,
+                                            gridCoordinates);
+                                        continue;
+                                    case GridElementType.DestroyedShip:
+                                    case GridElementType.Miss:
+                                        _possibleShipCoordinates.Remove(_possibleShipCoordinates[index]);
+                                        continue;
+                                    default:
+                                        throw new ArgumentOutOfRangeException();
+                                }
                             }
+
+                            yield break;
+                        case GridElementType.DestroyedShip:
+                        case GridElementType.Miss:
+                            continue;
+                        default:
+                            throw new ArgumentOutOfRangeException();
+                    }
+                }
+                else
+                {
+                    while (_possibleShipCoordinates.Any())
+                    {
+                        yield return new WaitForSeconds(1);
+                        var index = Random.Range(0, _possibleShipCoordinates.Count);
+                        var x = _possibleShipCoordinates[index].X;
+                        var y = _possibleShipCoordinates[index].Y;
+                        var possibleItem = _userGridsCells[x, y];
+                        switch (possibleItem.GridElementType)
+                        {
+                            case GridElementType.None:
+                                possibleItem.GridElementType = GridElementType.Miss;
+                                _soundManager.PlaySfx(SfxType.Miss);
+                                _messageItemsController.LogGenerate(
+                                    _userGridsCells[x, y],
+                                    OwnerType.Computer);
+                                _possibleShipCoordinates.Remove(_possibleShipCoordinates[index]);
+                                AttackBlocker(false);
+                                yield break;
+                            case GridElementType.Ship:
+                                possibleItem.GridElementType = GridElementType.DestroyedShip;
+                                _soundManager.PlaySfx(SfxType.Explosion);
+                                _messageItemsController.LogGenerate(
+                                    _userGridsCells[x, y],
+                                    OwnerType.Computer);
+                                _sessionDataManager.ComputerHitShipsCount++;
+                                _possibleShipCoordinates = PossibleShipCoordinates(possibleItem.Coordinates,
+                                    gridCoordinates);
+                                continue;
+                            case GridElementType.DestroyedShip:
+                            case GridElementType.Miss:
+                                _possibleShipCoordinates.Remove(_possibleShipCoordinates[index]);
+                                continue;
+                            default:
+                                throw new ArgumentOutOfRangeException();
                         }
-                        yield break;
-                    case GridElementType.DestroyedShip:
-                        break;
-                    case GridElementType.Miss:
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
+                    }
                 }
             }
         }
+
+        private static List<Coordinates> PossibleShipCoordinates(Coordinates targetCoordinates,
+            List<Coordinates> gridCoordinates)
+        {
+            var x = targetCoordinates.X;
+            var y = targetCoordinates.Y;
+            var possibleCoordinates = new List<Coordinates>();
+            for (int i = -1; i < 2 && i != 0; i++)
+            {
+                possibleCoordinates.Add(new Coordinates(x, y + i));
+                possibleCoordinates.Add(new Coordinates(x + i, y));
+            }
+
+            return possibleCoordinates.Where(shipCoordinates
+                => gridCoordinates.Any(data
+                    => data.X == shipCoordinates.X && data.Y == shipCoordinates.Y)).ToList();
+        }
+
         
 
         private void ElementPressedForAttack(ElementItem elementItem)
@@ -253,8 +321,8 @@ namespace Managers
 
                 TryActivateShip(_shipsManager.ComputerShips);
 
-                _gamePage.UserScoreText.text = "Hit: " + _sessionDataManager.UserHitShipsCount;
-                _gamePage.ComputerScoreText.text = "Hit: " + _sessionDataManager.ComputerHitShipsCount;
+                _gamePage.UserScore.text = "Hit: " + _sessionDataManager.UserHitShipsCount;
+                _gamePage.ComputerScore.text = "Hit: " + _sessionDataManager.ComputerHitShipsCount;
             }
 
             _gamePage.WinnerText.text =
@@ -263,7 +331,7 @@ namespace Managers
                     ? "You LOSE"
                     : "You WIN";
 
-            _gamePage.WinnerPanelObject.SetActive(true);
+            _gamePage.WinnerPanel.SetActive(true);
         }
 
         private static void TryActivateShip(Ship[] ships)
