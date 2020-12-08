@@ -70,8 +70,9 @@ namespace Managers
             {
                 elementItem.GridElementType = GridElementType.None;
             }
+            
 
-            var gridCoordinatesList =
+            var gridCoordinates =
                 (from ElementItem elementItem in grid select elementItem.Coordinates).ToList();
             for (int i = 0; i < 3; i++)
             {
@@ -100,23 +101,29 @@ namespace Managers
                     var randomColumn = Random.Range(0, gridSize);
                     var randomCoordinate = new Coordinates(randomRow, randomColumn);
                     var coordinates = GetShipCoordinates(ship.ShipType, randomCoordinate, ship.IsVertical);
-                    var shipCoordinatesList
+                    var shipCoordinates
                         = coordinates.Item1;
-                    var shipItemList = new List<ElementItem>();
-                    var validShipCoordinatesList = shipCoordinatesList.Where(shipCoordinate
-                        => gridCoordinatesList.Any(data
+                    var shipItems = new List<ElementItem>();
+                    var validShipCoordinates = shipCoordinates.Where(shipCoordinate
+                        => gridCoordinates.Any(data
                             => data.X == shipCoordinate.X && data.Y == shipCoordinate.Y)).ToList();
 
-                    if (validShipCoordinatesList.Count == ship.ElementsPositions.Length)
+                    var accessCoordinates = coordinates.Item2.Where(shipCoordinate
+                        => gridCoordinates.Any(data
+                            => data.X == shipCoordinate.X && data.Y == shipCoordinate.Y)).ToList();
+                    var accessItems = accessCoordinates.Select(t => grid[t.X, t.Y]).ToArray();
+                    
+                    if (validShipCoordinates.Count == ship.ElementsPositions.Length)
                     {
                         for (int i = 0; i < ship.ElementsPositions.Length; i++)
                         {
-                            shipItemList.Add(grid[validShipCoordinatesList[i].X, validShipCoordinatesList[i].Y]);
+                            shipItems.Add(grid[validShipCoordinates[i].X, validShipCoordinates[i].Y]);
                         }
 
-                        ship.ShipItems = shipItemList.ToArray();
+                        ship.ShipItems = shipItems.ToArray();
 
-                        if (ship.ShipItems.All(data => data.GridElementType == GridElementType.None))
+                        if (ship.ShipItems.All(data => data.GridElementType == GridElementType.None)
+                        && accessItems.All(item => item.GridElementType == GridElementType.None))
                         {
                             foreach (var shipItem in ship.ShipItems)
                             {
@@ -197,7 +204,6 @@ namespace Managers
                     for (var i = 0; i < length; i++)
                     {
                         coordinates.Add(new Coordinates(targetCoordinates.X + i, targetCoordinates.Y));
-                        
                         accessZone.Add(new Coordinates(targetCoordinates.X + i, targetCoordinates.Y - 1));
                         accessZone.Add(new Coordinates(targetCoordinates.X + i, targetCoordinates.Y + 1));
                     }
@@ -212,6 +218,13 @@ namespace Managers
             else
             {
                 coordinates.Add(targetCoordinates);
+                for (int i = - 1; i < 2; i++)
+                {
+                   accessZone.Add(new Coordinates(targetCoordinates.X + 1, targetCoordinates.Y + i)); 
+                   accessZone.Add(new Coordinates(targetCoordinates.X - 1, targetCoordinates.Y + i)); 
+                }
+                accessZone.Add(new Coordinates(targetCoordinates.X, targetCoordinates.Y - 1));
+                accessZone.Add(new Coordinates(targetCoordinates.X, targetCoordinates.Y + 1));
             }
 
             return new Tuple<List<Coordinates>, List<Coordinates>>(coordinates, accessZone);
