@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Elements;
 using Managers;
-using UI;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -20,7 +19,6 @@ namespace Pool
         {
             GenerateItem(new StepMessageData(GetMessageText(gridElement), ownerType));
             _scrollRect.verticalNormalizedPosition = -0.2f;
-            
         }
 
         private void GenerateItem(StepMessageData stepMessageData)
@@ -37,7 +35,7 @@ namespace Pool
             }
         }
 
-        private string GetMessageText(ElementItem gridElement)
+        private static string GetMessageText(ElementItem gridElement)
         {
             var tempText = string.Empty;
 

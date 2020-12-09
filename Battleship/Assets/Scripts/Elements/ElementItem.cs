@@ -3,6 +3,7 @@ using DG.Tweening;
 using Managers;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.Rendering;
 using UnityEngine.UI;
 
 namespace Elements
@@ -61,8 +62,11 @@ namespace Elements
             Coordinates = coordinates;
             _innerButton.onClick.RemoveAllListeners();
             _innerButton.onClick.AddListener(
-                () => { onPressed?.Invoke(this); });
-            _innerButton.onClick.AddListener(ElementItemShake);
+                () =>
+                {
+                    onPressed?.Invoke(this);
+                    ElementItemShake();
+                });
             GridElementType = gridElementType;
             _ownerType = ownerType;
         }
@@ -78,7 +82,12 @@ namespace Elements
 
         private void ElementItemShake()
         {
-            _elementItemTransform.DOShakePosition(3f, 2.5f);
+            if (_ownerType == OwnerType.Computer)
+            {
+                _elementItemTransform.localScale = Vector3.zero;
+                _elementItemTransform.DOScale(Vector3.one, 0.5f).SetEase(Ease.OutBack);
+                _elementItemTransform.DOShakePosition(3f, 2.5f);
+            }
         }
     }
 }

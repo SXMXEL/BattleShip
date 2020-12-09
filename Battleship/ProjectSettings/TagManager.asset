@@ -42,3 +42,12 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
+  - name: HitedGridElement
+    uniqueID: 487532337
+    locked: 0
+  - name: Ship
+    uniqueID: 2382912261
+    locked: 0
+  - name: GridElement
+    uniqueID: 2375827507
+    locked: 0

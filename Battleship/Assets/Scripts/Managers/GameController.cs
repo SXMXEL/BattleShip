@@ -89,7 +89,7 @@ namespace Managers
                 item.gameObject.SetActive(false);
                 item.Dispose();
             }
-            
+
             FreshStart();
             AttackBlocker(false);
             ResetShips(_shipsManager.UserShips);
@@ -170,25 +170,19 @@ namespace Managers
                     {
                         case GridElementType.None:
                             currentElementItem.GridElementType = GridElementType.Miss;
-                            _soundManager.PlaySfx(SfxType.Miss);
-                            _messageItemsController.LogGenerate(
-                                _userGridsCells[randRow, randColumn],
-                                OwnerType.Computer);
+                            OnAttack(currentElementItem, SfxType.Miss, randRow, randColumn);
                             AttackBlocker(false);
                             yield break;
                         case GridElementType.Ship:
                             currentElementItem.GridElementType = GridElementType.DestroyedShip;
-                            _soundManager.PlaySfx(SfxType.Explosion);
-                            _messageItemsController.LogGenerate(
-                                _userGridsCells[randRow, randColumn],
-                                OwnerType.Computer);
+                            OnAttack(currentElementItem, SfxType.Explosion, randRow, randColumn);
                             _sessionDataManager.ComputerHitShipsCount++;
                             _possibleShipCoordinates = PossibleShipCoordinates(currentElementItem.Coordinates,
                                 gridCoordinates);
                             while (_possibleShipCoordinates.Any())
                             {
                                 yield return new WaitForSeconds(1);
-                                int index = Random.Range(0, _possibleShipCoordinates.Count);
+                                var index = Random.Range(0, _possibleShipCoordinates.Count);
                                 var x = _possibleShipCoordinates[index].X;
                                 var y = _possibleShipCoordinates[index].Y;
                                 var possibleItem = _userGridsCells[x, y];
@@ -196,19 +190,13 @@ namespace Managers
                                 {
                                     case GridElementType.None:
                                         possibleItem.GridElementType = GridElementType.Miss;
-                                        _soundManager.PlaySfx(SfxType.Miss);
-                                        _messageItemsController.LogGenerate(
-                                            _userGridsCells[x, y],
-                                            OwnerType.Computer);
+                                        OnAttack(possibleItem, SfxType.Miss, x, y);
                                         _possibleShipCoordinates.Remove(_possibleShipCoordinates[index]);
                                         AttackBlocker(false);
                                         yield break;
                                     case GridElementType.Ship:
                                         possibleItem.GridElementType = GridElementType.DestroyedShip;
-                                        _soundManager.PlaySfx(SfxType.Explosion);
-                                        _messageItemsController.LogGenerate(
-                                            _userGridsCells[x, y],
-                                            OwnerType.Computer);
+                                        OnAttack(possibleItem, SfxType.Explosion, x, y);
                                         _sessionDataManager.ComputerHitShipsCount++;
                                         _possibleShipCoordinates = PossibleShipCoordinates(possibleItem.Coordinates,
                                             gridCoordinates);
@@ -218,7 +206,7 @@ namespace Managers
                                         _possibleShipCoordinates.Remove(_possibleShipCoordinates[index]);
                                         continue;
                                     default:
-                                        throw new ArgumentOutOfRangeException();
+                                        yield break;
                                 }
                             }
 
@@ -227,7 +215,7 @@ namespace Managers
                         case GridElementType.Miss:
                             continue;
                         default:
-                            throw new ArgumentOutOfRangeException();
+                            yield break;
                     }
                 }
                 else
@@ -243,19 +231,13 @@ namespace Managers
                         {
                             case GridElementType.None:
                                 possibleItem.GridElementType = GridElementType.Miss;
-                                _soundManager.PlaySfx(SfxType.Miss);
-                                _messageItemsController.LogGenerate(
-                                    _userGridsCells[x, y],
-                                    OwnerType.Computer);
+                                OnAttack(possibleItem, SfxType.Miss, x, y);
                                 _possibleShipCoordinates.Remove(_possibleShipCoordinates[index]);
                                 AttackBlocker(false);
                                 yield break;
                             case GridElementType.Ship:
                                 possibleItem.GridElementType = GridElementType.DestroyedShip;
-                                _soundManager.PlaySfx(SfxType.Explosion);
-                                _messageItemsController.LogGenerate(
-                                    _userGridsCells[x, y],
-                                    OwnerType.Computer);
+                                OnAttack(possibleItem, SfxType.Explosion, x, y);
                                 _sessionDataManager.ComputerHitShipsCount++;
                                 _possibleShipCoordinates = PossibleShipCoordinates(possibleItem.Coordinates,
                                     gridCoordinates);
@@ -265,11 +247,23 @@ namespace Managers
                                 _possibleShipCoordinates.Remove(_possibleShipCoordinates[index]);
                                 continue;
                             default:
-                                throw new ArgumentOutOfRangeException();
+                                yield break;
                         }
                     }
                 }
             }
+        }
+
+        private void OnAttack(ElementItem AttackedItem, SfxType sfxType, int x, int y)
+        {
+            _soundManager.PlaySfx(sfxType);
+            _messageItemsController.LogGenerate(
+                _userGridsCells[x, y],
+                OwnerType.Computer);
+            var itemTransform =  AttackedItem.gameObject.transform;
+            itemTransform.localScale = Vector3.zero;
+            itemTransform.DOScale(Vector3.one, 0.5f).SetEase(Ease.OutBack);
+            itemTransform.DOShakePosition(3f, 2.5f);
         }
 
         private static List<Coordinates> PossibleShipCoordinates(Coordinates targetCoordinates,
@@ -277,19 +271,19 @@ namespace Managers
         {
             var x = targetCoordinates.X;
             var y = targetCoordinates.Y;
-            var possibleCoordinates = new List<Coordinates>();
-            for (int i = -1; i < 2 && i != 0; i++)
+            var possibleCoordinates = new List<Coordinates>
             {
-                possibleCoordinates.Add(new Coordinates(x, y + i));
-                possibleCoordinates.Add(new Coordinates(x + i, y));
-            }
-
+                new Coordinates(x, y + 1),
+                new Coordinates(x, y - 1),
+                new Coordinates(x + 1, y),
+                new Coordinates(x - 1, y)
+            };
+            
             return possibleCoordinates.Where(shipCoordinates
                 => gridCoordinates.Any(data
                     => data.X == shipCoordinates.X && data.Y == shipCoordinates.Y)).ToList();
         }
 
-        
 
         private void ElementPressedForAttack(ElementItem elementItem)
         {

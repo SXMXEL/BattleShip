@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 6649223681584305814}
   - component: {fileID: 5415639056245525943}
   - component: {fileID: 2404139427141492496}
+  - component: {fileID: 8736712964921689549}
   m_Layer: 5
   m_Name: ElementSpriteChange
   m_TagString: Untagged
@@ -97,6 +98,17 @@ MonoBehaviour:
     _gfx: {fileID: 21300000, guid: a2fbadd2f10d9194db0fece299cf002f, type: 3}
   - _gridElementType: 3
     _gfx: {fileID: 21300000, guid: bec6b1561b193024f8816ae2a9591c5a, type: 3}
+--- !u!210 &8736712964921689549
+SortingGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2424706203527950467}
+  m_Enabled: 1
+  m_SortingLayerID: 487532337
+  m_SortingLayer: 3
+  m_SortingOrder: 1
 --- !u!1 &6877884123649773435
 GameObject:
   m_ObjectHideFlags: 0
@@ -110,6 +122,7 @@ GameObject:
   - component: {fileID: 6877884123649773428}
   - component: {fileID: 6877884123649773429}
   - component: {fileID: 8512382937802705062}
+  - component: {fileID: 5270753012287223266}
   m_Layer: 5
   m_Name: ElementItem
   m_TagString: Untagged
@@ -232,3 +245,14 @@ MonoBehaviour:
   _innerButton: {fileID: 6877884123649773429}
   _elementSpriteChange: {fileID: 2404139427141492496}
   _elementItemTransform: {fileID: 6877884123649773434}
+--- !u!210 &5270753012287223266
+SortingGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6877884123649773435}
+  m_Enabled: 1
+  m_SortingLayerID: -1919139789
+  m_SortingLayer: 1
+  m_SortingOrder: 0
