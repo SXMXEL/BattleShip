@@ -1,9 +1,7 @@
-﻿using Elements;
-using UI;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.EventSystems;
 
-namespace DragDropFunctions
+namespace DragAndDrop
 {
     public class OnDrop : MonoBehaviour, IDropHandler
     {

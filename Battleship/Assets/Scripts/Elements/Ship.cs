@@ -1,8 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using DG.Tweening;
-using DragDrop;
-using DragDropFunctions;
+using DragAndDrop;
 using Managers;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -29,6 +29,7 @@ namespace Elements
         public ElementItem[] ShipItems;
         public Vector3 DefaultPosition;
         public RectTransform ShipRectTransform;
+        public List<Coordinates> AccessZone;
         private ElementItem[,] _userGrid;
         private Sprite _currentShipSprite;
         private const float _maxDelay = 1.3f;
@@ -72,7 +73,6 @@ namespace Elements
             return nearestElementItem;
         }
 
-        
 
         protected override void OnItemBeginDrag()
         {
@@ -109,7 +109,7 @@ namespace Elements
                 _isTouched = false;
             }
         }
-        
+
         private System.Collections.IEnumerator WaitForDoubleTap()
         {
             yield return new WaitUntil(() => !_isTouched || Time.time >= _touchTime + _maxDelay);

@@ -1,16 +1,15 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
-public class SessionDataManager
+﻿namespace Data
 {
-    public int UserHitShipsCount;
-    public int ComputerHitShipsCount;
-
-    public SessionDataManager()
+    public class SessionDataManager
     {
-        UserHitShipsCount = 0;
-        ComputerHitShipsCount = 0;
-    }
+        public int UserHitShipsCount;
+        public int ComputerHitShipsCount;
+
+        public SessionDataManager()
+        {
+            UserHitShipsCount = 0;
+            ComputerHitShipsCount = 0;
+        }
     
+    }
 }

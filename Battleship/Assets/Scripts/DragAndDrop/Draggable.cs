@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.EventSystems;
 
-namespace DragDrop
+namespace DragAndDrop
 {
     [RequireComponent(typeof(RectTransform), typeof(CanvasGroup))]
     public abstract class Draggable : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, IEndDragHandler,

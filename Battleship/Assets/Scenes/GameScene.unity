@@ -1467,17 +1467,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 85b048fdc63dae14c96d20e9bf2a0234, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ComputerScore: {fileID: 1490783004}
-  UserScore: {fileID: 1985360466}
-  WinnerText: {fileID: 1876234361}
-  AttackBlock: {fileID: 1159476777}
   WinnerPanel: {fileID: 2015412336}
   HideGameObjects: {fileID: 447016014}
   ShipsContainer: {fileID: 1953263394}
-  Confirm: {fileID: 1868831951}
-  Random: {fileID: 1426708117}
+  ComputerScore: {fileID: 1490783004}
+  UserScore: {fileID: 1985360466}
+  WinnerText: {fileID: 1876234361}
+  _attackBlock: {fileID: 1159476777}
   _restartButton: {fileID: 417045275}
   _backToStartMenuButton: {fileID: 519364014}
+  _confirm: {fileID: 1868831951}
+  _random: {fileID: 1426708117}
 --- !u!1 &447016014
 GameObject:
   m_ObjectHideFlags: 0
@@ -2563,6 +2563,49 @@ SortingGroup:
   m_SortingLayerID: -1912055035
   m_SortingLayer: 2
   m_SortingOrder: 0
+--- !u!1 &840744006
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 840744008}
+  - component: {fileID: 840744007}
+  m_Layer: 0
+  m_Name: AttackManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &840744007
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 840744006}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4ec60d3af85b42088e5e7875662ab25d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!4 &840744008
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 840744006}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 1915152168}
+  m_RootOrder: 2
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &840797913
 GameObject:
   m_ObjectHideFlags: 0
@@ -2647,7 +2690,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 42.85
+  m_fontSize: 42.9
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -3111,7 +3154,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 59.55
+  m_fontSize: 59.6
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -3161,6 +3204,53 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 910644737}
   m_CullTransparentMesh: 0
+--- !u!1 &943260127
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 943260128}
+  - component: {fileID: 943260129}
+  m_Layer: 0
+  m_Name: GridManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &943260128
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 943260127}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 1915152168}
+  m_RootOrder: 3
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &943260129
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 943260127}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3079fe78f46f4de49387029173ffa31e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _userGridContainer: {fileID: 1437940405}
+  _computerGridContainer: {fileID: 410070573}
+  _gridCell: {fileID: 8512382937802705062, guid: 0ba7c994609e3294089864de4b4558ae,
+    type: 3}
 --- !u!1 &990913464
 GameObject:
   m_ObjectHideFlags: 0
@@ -6331,16 +6421,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7a81a56afdfbf964f808be5342101da6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _attackManager: {fileID: 840744007}
   _soundManager: {fileID: 416892416}
   _startPage: {fileID: 844197774}
   _settingsPage: {fileID: 1560687376}
   _gamePage: {fileID: 436038237}
+  _gridManager: {fileID: 943260129}
   _shipsManager: {fileID: 1180865605}
   _messageItemsController: {fileID: 1879017571}
-  _gridCell: {fileID: 8512382937802705062, guid: 0ba7c994609e3294089864de4b4558ae,
-    type: 3}
-  _userGridContainer: {fileID: 1437940405}
-  _computerGridContainer: {fileID: 410070573}
 --- !u!4 &1915152168
 Transform:
   m_ObjectHideFlags: 0
@@ -6354,6 +6442,8 @@ Transform:
   m_Children:
   - {fileID: 416892418}
   - {fileID: 1180865604}
+  - {fileID: 840744008}
+  - {fileID: 943260128}
   m_Father: {fileID: 0}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
